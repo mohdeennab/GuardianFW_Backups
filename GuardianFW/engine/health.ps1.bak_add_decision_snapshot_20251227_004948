@@ -1,0 +1,55 @@
+﻿$ErrorActionPreference="Stop"
+$root="C:\ProgramData\GuardianFW"
+
+$logDir = Join-Path $root "logs"
+New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+$trace  = Join-Path $logDir "health-trace.txt"
+$lock   = Join-Path $logDir "health.lock"
+
+function Trace([string]$msg){
+  ("[{0}] {1}" -f (Get-Date -Format s), $msg) | Add-Content -Encoding UTF8 $trace
+}
+
+# ---- single instance lock (REAL) ----
+if(Test-Path $lock){
+  Trace "LOCKED: previous run still active; exiting."
+  exit 0
+}
+"locked $(Get-Date -Format s) pid=$PID" | Set-Content -Encoding UTF8 $lock
+
+try {
+  Trace "HEALTH_START"
+
+  $fw  = & "$root\engine\verify-firewall.ps1"
+  $reg = & "$root\engine\verify-registry.ps1"
+  $int = & "$root\engine\verify-integrity.ps1"
+
+  $overall = if($fw.status -eq "OK" -and $reg.status -eq "OK" -and $int.status -eq "OK"){"OK"}else{"DRIFT"}
+
+  $out = @{
+    timestamp=(Get-Date).ToString("s")
+    overall=$overall
+    firewall=$fw
+    registry=$reg
+    integrity=$int
+  }
+
+  $evDir = Join-Path $root "evidence\health"
+  New-Item -ItemType Directory -Path $evDir -Force | Out-Null
+
+  $fn = "health-{0}.json" -f (Get-Date -Format yyyyMMdd-HHmmss)
+  $out | ConvertTo-Json -Depth 12 | Out-File (Join-Path $evDir $fn) -Encoding UTF8
+  $out | ConvertTo-Json -Depth 12 | Out-File (Join-Path $evDir "health-latest.json") -Encoding UTF8
+
+  Trace ("HEALTH_END overall={0} wrote={1}" -f $overall,$fn)
+
+  if($overall -eq "OK"){ exit 0 } else { exit 1 }
+}
+catch {
+  Trace ("HEALTH_ERROR: {0}" -f $_.Exception.Message)
+  Trace ("AT: {0}" -f $_.InvocationInfo.PositionMessage)
+  exit 2
+}
+finally {
+  Remove-Item $lock -Force -ErrorAction SilentlyContinue
+}

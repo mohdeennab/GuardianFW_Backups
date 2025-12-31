@@ -1,0 +1,46 @@
+﻿{
+    "timestamp":  "2025-12-28T00:22:06",
+    "mode":  "PROD",
+    "overall":  "DRIFT",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-28T00:22:03",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-28T00:22:05",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "timestamp":  "2025-12-28T00:22:06",
+                      "drift":  [
+                                    {
+                                        "expected":  "0E605934AB1E969BE7D38FBE0E3E67AC3AC16B2BA677CBABEB63EE14BB86DC44",
+                                        "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health.ps1",
+                                        "actual":  "2888BA934D4494CBD651E3D8C1097A75C97DF9E48AD2741A111312D4325A8DE9",
+                                        "type":  "file_hash"
+                                    }
+                                ],
+                      "warnings":  [
+
+                                   ],
+                      "missing":  [
+
+                                  ],
+                      "mode":  "PROD",
+                      "status":  "DRIFT"
+                  }
+}

@@ -1,0 +1,41 @@
+﻿{
+    "timestamp":  "2025-12-27T23:35:58",
+    "mode":  "DEV",
+    "overall":  "OK",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T23:35:57",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T23:35:57",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "timestamp":  "2025-12-27T23:35:58",
+                      "drift":  [
+
+                                ],
+                      "warnings":  [
+
+                                   ],
+                      "missing":  [
+
+                                  ],
+                      "mode":  "DEV",
+                      "status":  "OK"
+                  }
+}

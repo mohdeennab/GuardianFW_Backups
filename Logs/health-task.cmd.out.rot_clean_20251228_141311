@@ -1,0 +1,181 @@
+==== 2025-12-28 14:07:57.13 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_LASTEXIT]] 0
+AFTER_POWERSHELL
+==== 2025-12-28 14:08:06.43 END (task) ====
+==== 2025-12-28 14:08:37.03 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_LASTEXIT]] 0
+AFTER_POWERSHELL
+==== 2025-12-28 14:08:46.84 END (task) ====
+==== 2025-12-28 14:09:12.06 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:63 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:56 char:11
++       try { Set-Content -LiteralPath $errFile -Value (# run-health-ph ...
++           ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:227 char:19
++ .Exception.Message) -Encoding UTF8 -Force } catch {}
++                   ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:55 char:13
++     } catch {
++             ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:50 char:33
++   $job = Start-Job -ScriptBlock {
++                                 ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:42 char:62
++ function Run-Probe([string]$ProbePath, [int]$TimeoutSec = 25){
++                                                              ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:227 char:19
++ .Exception.Message) -Encoding UTF8 -Force } catch {}
++                   ~
+Unexpected token ')' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:227 char:43
++ .Exception.Message) -Encoding UTF8 -Force } catch {}
++                                           ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:229 char:5
++     }
++     ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:230 char:3
++   } -ArgumentList $ProbePath,$outFile,$errFile
++   ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 14:09:12.41 END (task) ====
+==== 2025-12-28 14:09:37.04 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:63 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:118 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:173 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:166 char:11
++       try { Set-Content -LiteralPath $errFile -Value (# run-health-ph ...
++           ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:337 char:19
++ .Exception.Message) -Encoding UTF8 -Force } catch {}
++                   ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:165 char:13
++     } catch {
++             ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:160 char:33
++   $job = Start-Job -ScriptBlock {
++                                 ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:152 char:62
++ function Run-Probe([string]$ProbePath, [int]$TimeoutSec = 25){
++                                                              ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:111 char:11
++       try { Set-Content -LiteralPath $errFile -Value (# run-health-ph ...
++           ~
+Missing closing '}' in statement block or type definition.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:110 char:13
++     } catch {
++             ~
+Missing closing '}' in statement block or type definition.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 14:09:37.48 END (task) ====
+==== 2025-12-28 14:10:37.07 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The property 'ExitCode' cannot be found on this object. Verify that the property exists.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 14:10:38.52 END (task) ====
+==== 2025-12-28 14:11:37.05 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_LASTEXIT]] 0
+AFTER_POWERSHELL
+==== 2025-12-28 14:11:47.96 END (task) ====
+==== 2025-12-28 14:12:13.79 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_LASTEXIT]] 0
+AFTER_POWERSHELL
+==== 2025-12-28 14:12:24.38 END (task) ====
+==== 2025-12-28 14:12:36.10 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_LASTEXIT]] 0
+AFTER_POWERSHELL
+==== 2025-12-28 14:12:47.83 END (task) ====
+==== 2025-12-28 14:13:00.14 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL

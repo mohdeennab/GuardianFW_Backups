@@ -1,0 +1,16 @@
+﻿Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$stopFlag = "C:\ProgramData\GuardianFW\sealed\SERVICE_STOP.flag"
+
+while(-not (Test-Path -LiteralPath $stopFlag)) {
+  try {
+    cmd.exe /c "C:\ProgramData\GuardianFW\engine\run-health-task.cmd" | Out-Null
+  } catch {
+    try {
+      $msg = ("GuardianAgent loop error: " + $_)
+      Add-Content -LiteralPath "C:\ProgramData\GuardianFW\logs\guardian-service.log" -Value ($msg)
+    } catch {}
+  }
+  Start-Sleep -Seconds 15
+}

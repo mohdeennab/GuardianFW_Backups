@@ -1,0 +1,53 @@
+﻿$ErrorActionPreference = "Stop"
+
+$root = "C:\ProgramData\GuardianFW"
+. "C:\ProgramData\GuardianFW\engine\lib-ps-timeout.ps1"
+$baselinePath = "$root\integrity\firewall-baseline.json"
+$evDir = "$root\evidence\firewall"
+
+if (!(Test-Path $baselinePath)) {
+  throw "Firewall baseline not found."
+}
+
+$baseline = Get-Content $baselinePath -Raw | ConvertFrom-Json
+  $currentRules = @()
+  try {
+    $currentRules = Invoke-WithTimeout -TimeoutSec 12 -ScriptBlock {
+      Get-NetFirewallRule | Where-Object { $_.DisplayName -like "GuardianFW*" }
+    }
+  } catch {
+    # Never hang health checks: report as drift-like, but keep running
+    $currentRules = @()
+    $global:__GuardianFW_VerifyFirewallTimeout = $_.Exception.Message
+  }
+
+$missing = @()
+$modified = @()
+
+foreach ($b in $baseline.rules) {
+  $c = $currentRules | Where-Object { $_.DisplayName -eq $b.Name }
+
+  if (!$c) { $missing += $b.Name; continue }
+
+  if ($c.Action -ne $b.Action -or
+      $c.Direction -ne $b.Direction -or
+      $c.Enabled -ne $b.Enabled) {
+    $modified += $b.Name
+  }
+}
+
+$result = @{
+  timestamp = (Get-Date).ToString("s")
+  expected  = $baseline.ruleCount
+  found     = $currentRules.Count
+  missing   = $missing
+  modified  = $modified
+  status    = if ($missing.Count -eq 0 -and $modified.Count -eq 0) { "OK" } else { "DRIFT" }
+}
+
+New-Item -ItemType Directory -Path $evDir -Force | Out-Null
+$result | ConvertTo-Json -Depth 4 |
+  Out-File "$evDir\verify-$(Get-Date -Format yyyyMMdd-HHmmss).json"
+
+$result
+

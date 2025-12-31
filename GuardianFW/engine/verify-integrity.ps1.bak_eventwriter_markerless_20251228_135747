@@ -1,0 +1,10 @@
+﻿
+# --- EVENTS_PROOF (always runs) ---
+try {
+  $evDir = "C:\ProgramData\GuardianFW\events"
+  New-Item -ItemType Directory -Path $evDir -Force | Out-Null
+  $proof = Join-Path $evDir ("proof-{0}.txt" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
+  "proof ok at $(Get-Date -Format s)" | Set-Content -LiteralPath $proof -Encoding UTF8 -Force
+} catch {}
+# --- END EVENTS_PROOF ---
+

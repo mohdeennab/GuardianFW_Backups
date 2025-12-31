@@ -1,0 +1,18 @@
+﻿Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$stopFlag = "C:\ProgramData\GuardianFW\sealed\SERVICE_STOP.flag"
+
+while(-not (Test-Path -LiteralPath $stopFlag)) {
+  try {
+    # Run one cycle of your enforcement (task-style script)
+    & "C:\ProgramData\GuardianFW\engine\process-dns-enforce.ps1" | Out-Null
+  } catch {
+    # Don't crash the service loop; just keep running
+    try {
+      $msg = ("GuardianControl loop error: " + $_)
+      Add-Content -LiteralPath "C:\ProgramData\GuardianFW\logs\guardian-service.log" -Value ($msg)
+    } catch {}
+  }
+  Start-Sleep -Seconds 5
+}

@@ -1,0 +1,53 @@
+﻿{
+    "decision":  {
+                     "status":  "OLD",
+                     "timestamp":  "2025-12-27T01:03:16",
+                     "file":  "decision-20251227-010316-07cbb5.json",
+                     "note":  "newest decision older than 10 minutes"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T19:17:39",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "status":  "DRIFT",
+                      "timestamp":  "2025-12-27T19:17:40",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+                                    {
+                                        "expected":  "7A3A4F06F9E8230CBEAB8D71D494602ECA1AF5544D29C012673E9B0151107D6D",
+                                        "path":  "C:\\ProgramData\\GuardianFW\\engine\\health.ps1",
+                                        "actual":  "6F6708B978FEDF051D863939CF9139F0310F87F5715C4F66F3C8663BBDB20BEB",
+                                        "type":  "file_hash"
+                                    },
+                                    {
+                                        "expected":  "C183C513CAD401D8A7BBD9D5FE2E2BF2D73068C30C012D0B595D303790E1995E",
+                                        "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health.ps1",
+                                        "actual":  "3A92B75E40440182BF2A243ECDEAB3151727D201FAC027F40559882D3C4A33AE",
+                                        "type":  "file_hash"
+                                    }
+                                ]
+                  },
+    "timestamp":  "2025-12-27T19:17:40",
+    "overall":  "DRIFT",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T19:17:38",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 }
+}

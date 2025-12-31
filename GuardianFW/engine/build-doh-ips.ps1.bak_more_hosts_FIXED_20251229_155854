@@ -1,0 +1,68 @@
+﻿Set-StrictMode -Version Latest
+$ErrorActionPreference="Stop"
+
+$out = "C:\ProgramData\GuardianFW\policy\doh-ips.json"
+$dir = Split-Path $out
+if(!(Test-Path -LiteralPath $dir)){ New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+
+# Providers: hostnames + known anycast IPs (important!)
+$providers = @(
+  @{
+    name="Cloudflare"
+    hosts=@("cloudflare-dns.com","dns.cloudflare.com")
+    seedIps=@("1.1.1.1","1.0.0.1","2606:4700:4700::1111","2606:4700:4700::1001")
+  },
+  @{
+    name="Google"
+    hosts=@("dns.google")
+    seedIps=@("8.8.8.8","8.8.4.4","2001:4860:4860::8888","2001:4860:4860::8844")
+  },
+  @{
+    name="Quad9"
+    hosts=@("dns.quad9.net")
+    seedIps=@("9.9.9.9","149.112.112.112","2620:fe::fe","2620:fe::9")
+  }
+)
+
+function Resolve-HostIps([string]$hostname){
+  $ips=@()
+  foreach($typ in @("A","AAAA")){
+    try {
+      $rr = Resolve-DnsName $hostname -Type $typ -ErrorAction Stop | Where-Object { $_.IPAddress }
+      foreach($ip in @($rr.IPAddress)){
+        if($ip){ $ips += [string]$ip }
+      }
+    } catch {}
+  }
+  return ($ips | Sort-Object -Unique)
+}
+
+$all=@()
+foreach($p in $providers){
+  $ips=@()
+
+  foreach($ip in @($p.seedIps)){
+    if($ip){ $ips += [string]$ip }
+  }
+
+  foreach($h in @($p.hosts)){
+    $ips += Resolve-HostIps $h
+  }
+
+  $ips = $ips | Sort-Object -Unique
+
+  $all += [pscustomobject]@{
+    name = [string]$p.name
+    hosts = @($p.hosts)
+    ips  = @($ips)
+  }
+}
+
+$obj = [pscustomobject]@{
+  updated_utc = (Get-Date).ToUniversalTime().ToString("o")
+  providers   = $all
+}
+
+($obj | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $out -Encoding UTF8
+Write-Host "Wrote: $out"
+

@@ -1,0 +1,21 @@
+﻿{
+    "status":  "DRIFT",
+    "timestamp":  "2025-12-26T22:38:04",
+    "missing":  [
+
+                ],
+    "drift":  [
+                  {
+                      "expected":  "6F54F69A98B0224961725346B584ED95F744BCF2F9FD2C76DC4DFF614913FAA8",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\guardianfw.ps1",
+                      "actual":  "8142B1EAE314825E697C8B0703E08CB6911FC408E7B41142241FBEA59B626546",
+                      "type":  "file_hash"
+                  },
+                  {
+                      "expected":  "37A0DADAA71DA79CAF21BAE90612880CE9EF959AFCBB92DEB73E0B03D9CE44F2",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\write-decision.ps1",
+                      "actual":  "2ADEA979A5726C06A04D4076A6C777EF36CC9802150503E64F6634499239ECDA",
+                      "type":  "file_hash"
+                  }
+              ]
+}

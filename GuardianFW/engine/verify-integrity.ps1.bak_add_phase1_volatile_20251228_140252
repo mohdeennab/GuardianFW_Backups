@@ -1,0 +1,135 @@
+﻿# verify-integrity.ps1 (Phase3 minimal)
+# Exit codes: 0=OK, 20=DRIFT, 50=ERROR
+
+$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+$root = "C:\ProgramData\GuardianFW"
+$baseFile = Join-Path $root "baseline\baseline.sha256"
+$evDir = Join-Path $root "events"
+New-Item -ItemType Directory -Path $evDir -Force | Out-Null
+
+function Get-GfwMode {
+  try {
+    $cfgPath = Join-Path $root "config.json"
+    if(Test-Path -LiteralPath $cfgPath){
+      $cfg = Get-Content -LiteralPath $cfgPath -Raw -Encoding UTF8 | ConvertFrom-Json
+      $m = [string]$cfg.mode
+      if([string]::IsNullOrWhiteSpace($m)){ return "PROD" }
+      $m = $m.ToUpperInvariant()
+      if($m -ne "DEV" -and $m -ne "PROD"){ return "PROD" }
+      return $m
+    }
+  } catch {}
+  return "PROD"
+}
+
+function Parse-Baseline([string]$path){
+  $items = @()
+  if(!(Test-Path -LiteralPath $path)){ throw "Missing baseline file: $path" }
+  foreach($line in (Get-Content -LiteralPath $path -Encoding UTF8)){
+    $t = ($line.Trim())
+    if($t -eq "" -or $t.StartsWith("#")){ continue }
+    # format: <sha256> *<path>
+    if($t -match '^([0-9a-fA-F]{64})\s+\*(.+)$'){
+      $items += [pscustomobject]@{ sha256=$matches[1].ToLowerInvariant(); path=$matches[2] }
+    }
+  }
+  return $items
+}
+
+$mode = Get-GfwMode
+$devMode = ($mode -eq "DEV")
+
+# Volatile wrapper scripts (acceptable drift in DEV only)
+$volatilePaths = @(
+  "C:\ProgramData\GuardianFW\engine\run-health.ps1",
+  "C:\ProgramData\GuardianFW\engine\*.wrapper.ps1",
+  "C:\ProgramData\GuardianFW\engine\health.ps1"
+)
+
+$missing = @()
+$drift   = @()
+$warnings= @()
+
+try {
+  $baseline = Parse-Baseline $baseFile
+
+  foreach($f in $baseline){
+    if(!(Test-Path -LiteralPath $f.path)){
+      $missing += $f.path
+      continue
+    }
+    $h = (Get-FileHash -Algorithm SHA256 -LiteralPath $f.path).Hash.ToLowerInvariant()
+    if($h -ne $f.sha256){
+      $isVolatile = $false
+      foreach($vp in $volatilePaths){
+        if($f.path -like $vp){ $isVolatile = $true; break }
+      }
+
+      if($devMode -and $isVolatile){
+        $warnings += @{ type="file_hash"; path=$f.path; expected=$f.sha256; actual=$h; note="DEV_MODE_IGNORED_VOLATILE" }
+      } else {
+        $drift += @{ type="file_hash"; path=$f.path; expected=$f.sha256; actual=$h }
+      }
+    }
+  }
+
+  # Ensure autoheal tasks exist & enabled
+  $tasks = @("GuardianFW-AutoHeal-Firewall","GuardianFW-AutoHeal-Registry","GuardianFW-AutoHeal-Integrity")
+  foreach($t in $tasks){
+    $q = (schtasks /Query /TN $t /FO LIST /V) 2>$null
+    if(!$q){
+      $drift += @{ type="task"; task=$t; issue="missing" }
+      continue
+    }
+    $enabled = ($q | Select-String '^(Status:\s+Ready|Scheduled Task State:\s+Enabled)' -Quiet)
+    if(-not $enabled){
+      $drift += @{ type="task"; task=$t; issue="disabled" }
+    }
+  }
+
+  # Firewall profiles enabled
+  foreach($pf in (Get-NetFirewallProfile)){
+    if($pf.Enabled -eq $false){
+      $drift += @{ type="firewall_profile"; profile=$pf.Name; issue="disabled" }
+    }
+  }
+
+} catch {
+  $drift += @{ type="exception"; message=$_.Exception.Message }
+}
+
+# Normalize arrays
+$missing = @($missing) | Where-Object { $_ -ne $null }
+$drift   = @($drift)   | Where-Object { $_ -ne $null }
+$warnings= @($warnings)| Where-Object { $_ -ne $null }
+
+$script:result = @{
+  timestamp = (Get-Date).ToString("s")
+  mode      = $mode
+  status    = if(@($drift).Count -eq 0 -and @($missing).Count -eq 0){"OK"} else {"DRIFT"}
+  missing   = @($missing)
+  drift     = @($drift)
+  warnings  = @($warnings)
+}
+$script:resultObj = [pscustomobject]$script:result
+
+# Write event JSON
+try {
+  $eventPath = Join-Path $evDir ("verify-{0}.json" -f (Get-Date -Format "yyyyMMdd-HHmmss"))
+  $script:resultObj | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $eventPath -Encoding UTF8 -Force
+} catch {
+  try {
+    New-Item -ItemType Directory -Path (Join-Path $root "logs") -Force | Out-Null
+    Add-Content -LiteralPath (Join-Path $root "logs\verify-integrity.eventwrite.err") `
+      -Value ("{0} EVENT_WRITE_FAIL: {1}" -f (Get-Date -Format s), $_.Exception.Message) -Encoding UTF8
+  } catch {}
+}
+
+# Output object (useful for manual runs)
+$script:resultObj
+
+# Exit codes
+if($script:result.status -eq "OK"){ exit 0 }
+else { exit 20 }

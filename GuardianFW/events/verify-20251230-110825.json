@@ -1,0 +1,20 @@
+﻿{
+    "timestamp":  "2025-12-30T11:08:25",
+    "drift":  [
+
+              ],
+    "warnings":  [
+                     {
+                         "expected":  "b4af5dbf8a0a71ee3207a6c8b63209718e1ede39a54bac1752b1e8e2b105156b",
+                         "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health-phase1.ps1",
+                         "actual":  "a4b8d662b028506c761acd812f080c544eeaf52a9edfbd56b621e4f4ac2ac243",
+                         "note":  "IGNORED_VOLATILE",
+                         "type":  "file_hash"
+                     }
+                 ],
+    "missing":  [
+
+                ],
+    "mode":  "PROD",
+    "status":  "OK"
+}

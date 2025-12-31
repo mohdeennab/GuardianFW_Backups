@@ -1,0 +1,22 @@
+﻿{
+    "actions":  [
+
+                ],
+    "timestamp":  "2025-12-28T00:38:02",
+    "component":  "integrity",
+    "note":  "File hash drift is logged but not auto-restored (installer should repair).",
+    "verify":  {
+                   "timestamp":  "2025-12-28T00:38:02",
+                   "drift":  [
+
+                             ],
+                   "warnings":  [
+
+                                ],
+                   "missing":  [
+
+                               ],
+                   "mode":  "PROD",
+                   "status":  "OK"
+               }
+}

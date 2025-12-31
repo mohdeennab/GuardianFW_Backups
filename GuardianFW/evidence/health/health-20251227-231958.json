@@ -1,0 +1,53 @@
+﻿{
+    "timestamp":  "2025-12-27T23:19:58",
+    "mode":  "DEV",
+    "overall":  "DRIFT",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T23:19:57",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T23:19:57",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "timestamp":  "2025-12-27T23:19:58",
+                      "drift":  [
+
+                                ],
+                      "warnings":  [
+                                       {
+                                           "expected":  "229744F091C28B60FF6B3113A384CC06E420B61E7E848B73AA082030165964FF",
+                                           "path":  "C:\\ProgramData\\GuardianFW\\engine\\health.ps1",
+                                           "actual":  "185A131B2C1F1F7D56C52D562D545E2BE34DA9A61200B95DBD7A9B8E84193DFC",
+                                           "note":  "DEV_MODE_IGNORED_VOLATILE",
+                                           "type":  "file_hash"
+                                       }
+                                   ],
+                      "missing":  [
+
+                                  ],
+                      "mode":  "DEV",
+                      "status":  "OK"
+                  },
+    "decision":  {
+                     "status":  "OLD",
+                     "file":  "decision-20251227-010316-07cbb5.json",
+                     "timestamp":  "2025-12-27T01:03:16",
+                     "note":  "newest decision older than 10 minutes"
+                 }
+}

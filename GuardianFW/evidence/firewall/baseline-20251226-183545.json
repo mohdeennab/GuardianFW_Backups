@@ -1,0 +1,83 @@
+﻿{
+    "timestamp":  "2025-12-26T18:35:45",
+    "rules":  [
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW DoH IP 1.1.1.1",
+                      "RemotePort":  "443",
+                      "Protocol":  "TCP",
+                      "Program":  "Any"
+                  },
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW DoH IP 1.0.0.1",
+                      "RemotePort":  "443",
+                      "Protocol":  "TCP",
+                      "Program":  "Any"
+                  },
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW DoH IP 8.8.8.8",
+                      "RemotePort":  "443",
+                      "Protocol":  "TCP",
+                      "Program":  "Any"
+                  },
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW DoH IP 8.8.4.4",
+                      "RemotePort":  "443",
+                      "Protocol":  "TCP",
+                      "Program":  "Any"
+                  },
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW DoH IP 9.9.9.9",
+                      "RemotePort":  "443",
+                      "Protocol":  "TCP",
+                      "Program":  "Any"
+                  },
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW DoH IP 149.112.112.112",
+                      "RemotePort":  "443",
+                      "Protocol":  "TCP",
+                      "Program":  "Any"
+                  },
+                  {
+                      "Action":  4,
+                      "Enabled":  1,
+                      "Profile":  0,
+                      "Direction":  2,
+                      "LocalPort":  "Any",
+                      "Name":  "GuardianFW Block QUIC Chrome UDP443 Out",
+                      "RemotePort":  "443",
+                      "Protocol":  "UDP",
+                      "Program":  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+                  }
+              ],
+    "ruleCount":  7
+}

@@ -1,0 +1,19 @@
+﻿{
+    "component":  "firewall",
+    "verify":  {
+                   "found":  7,
+                   "timestamp":  "2025-12-27T18:05:03",
+                   "modified":  [
+
+                                ],
+                   "expected":  7,
+                   "missing":  [
+
+                               ],
+                   "status":  "OK"
+               },
+    "last":  "verify_ok",
+    "timestamp":  "2025-12-27T18:05:03",
+    "failures":  0,
+    "state":  "ENFORCED"
+}

@@ -1,0 +1,93 @@
+﻿# run-health-phase1.ps1
+# Phase 1 deterministic wrapper + global mutex
+
+$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.ExitCodes.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.Evidence.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.Config.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.DB.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.Map.psm1" -Force
+
+# ---- Global mutex: prevent overlapping runs ----
+$mutexName = "Global\GuardianFW_Health_Lock"
+$mutex = New-Object System.Threading.Mutex($false, $mutexName)
+$hasLock = $false
+
+$cor = ""
+$start = Get-Date
+
+try {
+  # Wait max 5 seconds to acquire lock
+  $hasLock = $mutex.WaitOne(5000)
+  if(-not $hasLock){
+    exit $EXIT_NOOP
+  }
+
+  # 1) Baseline integrity
+  $b = Test-GfwBaseline
+  if(-not $b.ok){
+    $cor = Write-GfwEvidence `
+      -Component "health" `
+      -Action "verify_baseline" `
+      -Result "TAMPER" `
+      -ExitCode $EXIT_TAMPER `
+      -Details $b `
+      -CorrelationId $cor
+    exit $EXIT_TAMPER
+  }
+
+  # 2) Optional DB init (no evidence here)
+  $sqlite = "C:\ProgramData\GuardianFW\tools\sqlite3.exe"
+  $sqlite_status = "missing"
+  $sqlite_error  = ""
+
+  if(Test-Path $sqlite){
+    $sqlite_status = "present"
+    try { Initialize-GfwDb } catch { $sqlite_error = $_.Exception.Message }
+  }
+
+  # 3) Call inner health
+  $inner = "C:\ProgramData\GuardianFW\engine\run-health.ps1"
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $inner
+  $code = $LASTEXITCODE
+
+  # 4) Canonicalize + evidence (single line)
+  $elapsedMs = [int]((Get-Date) - $start).TotalMilliseconds
+  $canon = Convert-GfwInnerExitToCanonical -InnerExit $code
+
+  $details = @{
+    inner_exit     = $code
+    canonical      = $canon.result
+    canonical_exit = $canon.exit_code
+    elapsed_ms     = $elapsedMs
+    sqlite         = $sqlite_status
+  }
+  if($sqlite_error){ $details.sqlite_error = $sqlite_error }
+
+  $cor = Write-GfwEvidence `
+    -Component "health" `
+    -Action "health_cycle" `
+    -Result $canon.result `
+    -ExitCode $canon.exit_code `
+    -Details $details `
+    -CorrelationId $cor
+
+  exit $code
+
+} catch {
+  $cor = Write-GfwEvidence `
+    -Component "health" `
+    -Action "exception" `
+    -Result "FAIL" `
+    -ExitCode $EXIT_FAIL `
+    -Details @{ error=$_.Exception.Message; stack=$_.ScriptStackTrace } `
+    -CorrelationId $cor
+  exit $EXIT_FAIL
+} finally {
+  if($hasLock){
+    try { $mutex.ReleaseMutex() } catch {}
+  }
+  try { $mutex.Dispose() } catch {}
+}

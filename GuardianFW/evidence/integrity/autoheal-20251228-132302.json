@@ -1,0 +1,27 @@
+﻿{
+    "actions":  [
+
+                ],
+    "timestamp":  "2025-12-28T13:23:02",
+    "component":  "integrity",
+    "note":  "File hash drift is logged but not auto-restored (installer should repair).",
+    "verify":  {
+                   "timestamp":  "2025-12-28T13:23:02",
+                   "drift":  [
+                                 {
+                                     "expected":  "DB21188907DFBA5DD84FB5D09869C076C84C4ECB4B1BAE5203757AC01BEE92CD",
+                                     "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health-phase1.ps1",
+                                     "actual":  "1FB627CDB6A8EE21657E5FDDB5B6BCFCE60A5B66600F850C17974CFB0326BFBB",
+                                     "type":  "file_hash"
+                                 }
+                             ],
+                   "warnings":  [
+
+                                ],
+                   "missing":  [
+
+                               ],
+                   "mode":  "PROD",
+                   "status":  "DRIFT"
+               }
+}

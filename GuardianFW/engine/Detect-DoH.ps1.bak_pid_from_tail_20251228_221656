@@ -1,0 +1,329 @@
+﻿param(
+  [switch]$SelfTest,
+  [switch]$KeepArtifacts,
+  [int]$WindowSeconds = 6,
+  [int]$WeakRepeatThreshold = 2
+)
+
+$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+
+
+function Start-PidMapTrace([string]$TraceName,[string]$OutEtl){
+  # Kernel process provider: process start/stop gives us ImageFileName + PID
+  # "PROC_THREAD" kernel keyword is enough for process events
+  & logman.exe stop $TraceName -ets 2>$null | Out-Null
+  & logman.exe delete $TraceName 2>$null | Out-Null
+
+  & logman.exe create trace $TraceName -ets -o $OutEtl -nb 16 64 -bs 1024 -mode Circular -f bincirc -max 32 | Out-Null
+  & logman.exe update trace $TraceName -ets -p "Microsoft-Windows-Kernel-Process" 0x10 0x5 | Out-Null
+  # 0x10 = Process keyword
+  & logman.exe start $TraceName -ets | Out-Null
+}
+
+function Stop-PidMapTrace([string]$TraceName){
+  & logman.exe stop $TraceName -ets 2>$null | Out-Null
+}
+
+function Build-PidMapFromEtl([string]$EtlPath){
+  # Returns Hashtable: PID -> ImageFileName
+  $map = @{}
+  if(!(Test-Path -LiteralPath $EtlPath)){ return $map }
+
+  # Convert ETL to text with tracerpt (fast enough for small circular buffer)
+  $tmp = Join-Path $env:TEMP ("pidmap_{0}.csv" -f ([guid]::NewGuid().ToString("N")))
+  # tracerpt can fail if ETL not finalized yet -> retry a few times
+$ok = $false
+for($i=1; $i -le 5; $i++){
+  try {
+    & tracerpt.exe $EtlPath -o $tmp -of CSV 2>$null | Out-Null
+    if(Test-Path -LiteralPath $tmp){ $ok = $true; break }
+  } catch {}
+  Start-Sleep -Milliseconds 250
+}
+if(-not $ok){ return $map }
+
+  if(!(Test-Path -LiteralPath $tmp)){ return $map }
+
+  # CSV contains rows with "Process/Start" and columns include "Process ID" and "Image File Name" (varies by OS)
+  $rows = Import-Csv -LiteralPath $tmp
+  foreach($r in $rows){
+    try {
+      $evt = ($r."Event Name")
+      if($evt -and $evt -match 'Process/Start'){
+        $procId = $r."Process ID"
+        $img = $r."Image File Name"
+        if($procId -and $img){
+          $pidInt = [int]$procId
+          if(-not $map.ContainsKey($pidInt)){
+            $map[$pidInt] = $img
+          }
+        }
+      }
+    } catch {}
+  }
+
+  try { Remove-Item -LiteralPath $tmp -Force -EA SilentlyContinue | Out-Null } catch {}
+  return $map
+}
+$dohIps = @("1.1.1.1","1.0.0.1","8.8.8.8","8.8.4.4","9.9.9.9","149.112.112.112")
+
+$eventsDir = "C:\ProgramData\GuardianFW\events"
+New-Item -ItemType Directory -Path $eventsDir -Force | Out-Null
+$logPath   = Join-Path $eventsDir "doh-detect.jsonl"
+$statePath = Join-Path $eventsDir "doh-detect.state.json"
+
+$etl = Join-Path $eventsDir "tcpip_doh.etl"
+$txt = Join-Path $eventsDir "tcpip_doh.txt"
+
+function Stop-TraceQuiet { try { netsh trace stop | Out-Null } catch {} }
+
+function Load-State {
+  if(Test-Path $statePath){
+    try { return (Get-Content -LiteralPath $statePath -Raw -EA SilentlyContinue | ConvertFrom-Json) } catch {}
+  }
+  return [pscustomobject]@{ weak_hits = @() }
+}
+
+function Save-State($state){
+  try { $state | ConvertTo-Json -Compress | Set-Content -LiteralPath $statePath -Encoding UTF8 -Force } catch {}
+}
+
+function Add-EventLog($obj){
+  try {
+    ($obj | ConvertTo-Json -Compress) | Add-Content -LiteralPath $logPath -Encoding UTF8
+  } catch {}
+}
+
+function Extract-PidFromText([string]$s){
+  if([string]::IsNullOrWhiteSpace($s)){ return 0 }
+
+  # Prefer: "PID = 6404"
+  $m = [regex]::Match($s, '(?im)\bPID\s*=\s*(\d+)\b')
+  if($m.Success){
+    try { return [int]$m.Groups[1].Value } catch {}
+  }
+
+  # Fallback: "PID=0"
+  $m2 = [regex]::Match($s, '(?im)\bPID=(\d+)\b')
+  if($m2.Success){
+    try { return [int]$m2.Groups[1].Value } catch {}
+  }
+
+  return 0
+}
+
+function Get-HitText($h){
+  try {
+    if($null -eq $h){ return "" }
+
+    # Try common fields (hashtable or object)
+    foreach($k in @("blk","block","text","raw","line","message","ctx","context")){
+      try {
+        if($h -is [hashtable]){
+          if($h.ContainsKey($k) -and $h[$k]){ return [string]$h[$k] }
+        } else {
+          $v = $h.$k
+          if($v){ return [string]$v }
+        }
+      } catch {}
+    }
+
+    # Try common array-of-lines fields
+    foreach($k in @("lines","ctxLines","contextLines","blockLines")){
+      try {
+        if($h -is [hashtable]){
+          if($h.ContainsKey($k) -and $h[$k]){ return (($h[$k]) -join "`n") }
+        } else {
+          $v = $h.$k
+          if($v){ return ($v -join "`n") }
+        }
+      } catch {}
+    }
+  } catch {}
+  return ""
+}
+
+
+
+function Proc-Name([int]$procId, [hashtable]$PidMap){
+  if($procId -le 0){ return "unknown" }
+
+  # 0) Use PID map if available (most reliable for short-lived processes like curl)
+  try {
+    if($null -ne $PidMap -and $PidMap.ContainsKey($procId)){
+      $x = [string]$PidMap[$procId]
+      if($x -and $x.Trim()){ return $x }
+    }
+  } catch {}
+
+  # 1) Try CIM
+  try {
+    $w = Get-CimInstance Win32_Process -Filter "ProcessId=$procId" -ErrorAction Stop
+    if($null -ne $w -and $w.Name -and $w.Name.Trim()){
+      return $w.Name
+    }
+  } catch {}
+
+  # 2) Fallback: Get-Process
+  try {
+    $p = Get-Process -Id $procId -ErrorAction Stop
+    if($null -ne $p -and $p.ProcessName -and $p.ProcessName.Trim()){
+      return $p.ProcessName
+    }
+  } catch {}
+
+  return "unknown"
+}
+
+# ---- capture ----
+Stop-TraceQuiet
+try { Remove-Item $etl,$txt -Force -EA SilentlyContinue | Out-Null } catch {}
+
+try {
+  netsh trace start capture=no report=no tracefile="$etl" provider=Microsoft-Windows-TCPIP level=5 keywords=0xFFFFFFFF | Out-Null
+
+  if($SelfTest){
+    Start-Sleep -Milliseconds 200
+    $u="https://cloudflare-dns.com/dns-query?name=example.com&type=A"
+    curl.exe -s --http1.1 "$u" --resolve cloudflare-dns.com:443:1.1.1.1 -H "accept: application/dns-json" | Out-Null
+  }
+
+  Start-Sleep -Seconds $WindowSeconds
+}
+finally {
+  Stop-TraceQuiet
+}
+
+netsh trace convert input="$etl" output="$txt" | Out-Null
+
+$blob = ""
+try { $blob = Get-Content -LiteralPath $txt -Raw -EA SilentlyContinue } catch {}
+
+if(-not $blob){
+  if(-not $KeepArtifacts){ try { Remove-Item $etl,$txt -Force -EA SilentlyContinue | Out-Null } catch {} }
+  exit 0
+}
+
+# ---- robust parsing ----
+# Strategy: find blocks containing remote=<ip>:443 and then classify by keywords found nearby.
+# We grab up to 600 chars after the remote match, so line wrapping/order doesn't matter.
+$hits = @()
+$weakSeen = @()
+
+foreach($ip in $dohIps){
+  $reBlock = [regex]("(?is)(?:remote|Remote)\s*=\s*"+[regex]::Escape($ip)+":443\)(.{0,600})")
+  foreach($m in $reBlock.Matches($blob)){
+    $procId = 0  # StrictMode: always define before use
+    $tail = $m.Groups[1].Value
+
+    # event type detection (wrap-safe)
+    $isStrong = ($tail -match '(?is)connect\s+completed')
+    $isMed    = ($tail -match '(?is)requested\s+to\s+connect|connect\s+proceeding')
+    $isWeak   = ($tail -match '(?is)\bexists\.')
+
+    if(-not ($isStrong -or $isMed -or $isWeak)){ continue }
+
+    # PID anywhere in the block tail (or shortly after)
+
+    $strength = if($isStrong){"strong"} elseif($isMed){"medium"} else {"weak"}
+    $source   = if($isStrong){"etw_tcpip_connect_completed"}
+                elseif($isMed){"etw_tcpip_preconnect"}
+                else {"etw_tcpip_exists_state"}
+
+
+    # --- unified PID extraction (authoritative) ---
+    $blkText = Get-HitText $m
+    $procId  = Extract-PidFromText $blkText
+    if(-not (Test-Path variable:procId)){ $procId = 0 }
+    $proc = Proc-Name $procId
+    if($procId -le 0){ $procId = 0 }
+    $blkText = Get-HitText $m
+    $procId  = Extract-PidFromText $blkText
+    $obj = [pscustomobject]@{
+      ts       = (Get-Date).ToString("s")
+      remote   = $ip
+      port     = 443
+    pid = $procId
+      proc     = $proc
+      strength = $strength
+      source   = $source
+    }
+
+    $hits += $obj
+    if($strength -eq "weak"){ $weakSeen += $ip }
+  }
+}
+
+# Deduplicate hits (remote+pid+strength)
+$hits = $hits | Sort-Object remote,pid,strength -Unique
+# ---- Stop PID map trace + build PID->Image map ----
+try { Stop-PidMapTrace -TraceName $PidTraceName } catch {}
+try { $PidMap = Build-PidMapFromEtl -EtlPath $PidEtl } catch { $PidMap = @{} }
+
+# Fill missing proc names (avoid "proc": null)
+foreach($h in $hits){
+  try {
+    if($null -eq $h.proc -or [string]::IsNullOrWhiteSpace([string]$h.proc)){
+      $h.proc = (Proc-Name $h.pid $PidMap)
+      if([string]::IsNullOrWhiteSpace([string]$h.proc)){ $h.proc = "unknown" }
+    }
+  } catch {
+    try { $h.proc = "unknown" } catch {}
+  }
+}
+
+# Optional cleanup
+if(-not $KeepArtifacts){
+  try { Remove-Item $etl,$txt -Force -EA SilentlyContinue | Out-Null } catch {}
+}
+
+# ---- Decision Logic ----
+# strong/medium => immediate suspicious
+if($hits | Where-Object { $_.strength -in @("strong","medium") }){
+  foreach($h in $hits){ Add-EventLog $h }
+  exit 20
+}
+
+# weak-only => require repeats within window
+  $hits = @($hits)  # force array (safe under StrictMode)
+if($hits.Count -gt 0){
+  $state = Load-State
+  $now = Get-Date
+  $cut = $now.AddSeconds(-1 * $WeakRepeatWindowSeconds)
+
+  $recent = @()
+  foreach($w in $state.weak_hits){
+    try { if([datetime]$w.ts -ge $cut){ $recent += $w } } catch {}
+  }
+
+  foreach($rip in ($weakSeen | Select-Object -Unique)){
+    $recent += [pscustomobject]@{ ts = $now.ToString("o"); remote = $rip }
+  }
+
+  $state.weak_hits = $recent
+  Save-State $state
+
+  foreach($rip in ($weakSeen | Select-Object -Unique)){
+    $count = @($state.weak_hits | Where-Object { $_.remote -eq $rip }).Count
+    if($count -ge $WeakRepeatThreshold){
+      foreach($h in $hits){ Add-EventLog $h }
+      exit 20
+    }
+  }
+
+  # weak seen but not enough repeats => log and exit clean
+  foreach($h in $hits){ Add-EventLog $h }
+  exit 0
+}
+
+exit 0
+
+
+
+
+
+
+
+

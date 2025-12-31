@@ -1,0 +1,47 @@
+﻿{
+    "decision":  {
+                     "status":  "OLD",
+                     "timestamp":  "2025-12-27T01:03:16",
+                     "file":  "decision-20251227-010316-07cbb5.json",
+                     "note":  "newest decision older than 10 minutes"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T13:38:46",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "status":  "DRIFT",
+                      "timestamp":  "2025-12-27T13:38:47",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+                                    {
+                                        "expected":  "B6E9FB2038DD5ADBECCF0BA6C2AC54327976A3DC34A9178601F6AFFDD72E9CBF",
+                                        "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health.ps1",
+                                        "actual":  "8B1C5D1E1F6FBE8972B235BBD6E1A5CB8009B0A3923F256ED466799ADD2D82CD",
+                                        "type":  "file_hash"
+                                    }
+                                ]
+                  },
+    "timestamp":  "2025-12-27T13:38:47",
+    "overall":  "DRIFT",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T13:38:42",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 }
+}

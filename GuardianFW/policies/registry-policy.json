@@ -1,0 +1,59 @@
+﻿{
+    "version":  1,
+    "targets":  [
+                    {
+                        "path":  "HKLM:\\SOFTWARE\\Policies\\Google\\Chrome",
+                        "name":  "Chrome",
+                        "values":  [
+                                       {
+                                           "name":  "DnsOverHttpsMode",
+                                           "value":  "off",
+                                           "type":  "String"
+                                       },
+                                       {
+                                           "name":  "QuicAllowed",
+                                           "value":  0,
+                                           "type":  "DWord"
+                                       }
+                                   ]
+                    },
+                    {
+                        "path":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                        "name":  "Edge",
+                        "values":  [
+                                       {
+                                           "name":  "DnsOverHttpsMode",
+                                           "value":  "off",
+                                           "type":  "String"
+                                       },
+                                       {
+                                           "name":  "QuicAllowed",
+                                           "value":  0,
+                                           "type":  "DWord"
+                                       }
+                                   ]
+                    },
+                    {
+                        "name":  "Firefox",
+                        "path":  "HKLM:\\SOFTWARE\\Policies\\Mozilla\\Firefox",
+                        "values":  [
+                                       {
+                                           "name":  "DNSOverHTTPS",
+                                           "type":  "DWord",
+                                           "value":  0
+                                       }
+                                   ]
+                    },
+                    {
+                        "name":  "DNSClientPolicy",
+                        "path":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient",
+                        "values":  [
+                                       {
+                                           "name":  "DoHPolicy",
+                                           "type":  "DWord",
+                                           "value":  0
+                                       }
+                                   ]
+                    }
+                ]
+}

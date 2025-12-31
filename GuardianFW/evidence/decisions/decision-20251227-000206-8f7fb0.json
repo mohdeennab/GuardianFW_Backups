@@ -1,0 +1,31 @@
+﻿{
+    "intent_id":  "INTENT_DOH_EVASION",
+    "risk_score":  45,
+    "timestamp":  "2025-12-27T00:02:06",
+    "out_path":  "C:\\ProgramData\\GuardianFW\\evidence\\decisions\\decision-20251227-000206-8f7fb0.json",
+    "confidence":  "HIGH",
+    "intent_category":  "DNS Integrity",
+    "out_file":  "decision-20251227-000206-8f7fb0.json",
+    "subject":  {
+                    "path":  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+                    "user":  "mohde",
+                    "process":  "chrome.exe"
+                },
+    "decision_id":  "8f7fb0b4-d4b3-4b7a-b1c6-3f4dede3701c",
+    "severity":  "HIGH",
+    "enforcement":  {
+                        "rule":  "GuardianFW DoH IP 1.1.1.1",
+                        "method":  "WFP + Firewall"
+                    },
+    "decision":  "BLOCK",
+    "justification":  [
+                          "Encrypted DNS evasion attempt",
+                          "Enterprise DNS policy enforced",
+                          "Local-only enforcement"
+                      ],
+    "network":  {
+                    "destination":  "1.1.1.1",
+                    "protocol":  "UDP",
+                    "remote_port":  443
+                }
+}

@@ -1,0 +1,36 @@
+﻿{
+    "overall":  "OK",
+    "timestamp":  "2025-12-26T23:56:48",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-26T23:56:43",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 },
+    "integrity":  {
+                      "status":  "OK",
+                      "timestamp":  "2025-12-26T23:56:48",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+
+                                ]
+                  },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-26T23:56:46",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 }
+}

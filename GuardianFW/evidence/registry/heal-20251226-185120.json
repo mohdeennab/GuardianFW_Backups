@@ -1,0 +1,42 @@
+﻿{
+    "changed":  [
+                    {
+                        "key":  "HKLM:\\SOFTWARE\\Policies\\Google\\Chrome",
+                        "type":  "String",
+                        "setTo":  "off",
+                        "value":  "DnsOverHttpsMode"
+                    },
+                    {
+                        "key":  "HKLM:\\SOFTWARE\\Policies\\Google\\Chrome",
+                        "type":  "DWord",
+                        "setTo":  0,
+                        "value":  "QuicAllowed"
+                    },
+                    {
+                        "key":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                        "type":  "String",
+                        "setTo":  "off",
+                        "value":  "DnsOverHttpsMode"
+                    },
+                    {
+                        "key":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                        "type":  "DWord",
+                        "setTo":  0,
+                        "value":  "QuicAllowed"
+                    },
+                    {
+                        "key":  "HKLM:\\SOFTWARE\\Policies\\Mozilla\\Firefox",
+                        "type":  "DWord",
+                        "setTo":  0,
+                        "value":  "DNSOverHTTPS"
+                    },
+                    {
+                        "key":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient",
+                        "type":  "DWord",
+                        "setTo":  0,
+                        "value":  "DoHPolicy"
+                    }
+                ],
+    "timestamp":  "2025-12-26T18:51:20",
+    "action":  "heal"
+}

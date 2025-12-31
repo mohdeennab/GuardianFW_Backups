@@ -1,0 +1,19 @@
+﻿{
+    "timestamp":  "2025-12-27T22:35:34",
+    "drift":  [
+                  {
+                      "expected":  "78D0CBAF0329384FBA6BBB0825B63E2EEEF41685EEB95F17102274CEEB32DDC9",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\verify-integrity.ps1",
+                      "actual":  "DB1DC9C8BEF98A894B9CBE52B1B3C2CEADD5FB0B4DFD7564395632CE74FD8D3B",
+                      "type":  "file_hash"
+                  }
+              ],
+    "warnings":  [
+
+                 ],
+    "missing":  [
+
+                ],
+    "mode":  "PROD",
+    "status":  "DRIFT"
+}

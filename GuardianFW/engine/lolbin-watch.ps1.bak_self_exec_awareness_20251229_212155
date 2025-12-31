@@ -1,0 +1,107 @@
+﻿Set-StrictMode -Version Latest
+$ErrorActionPreference="Stop"
+
+$Root   = "C:\ProgramData\GuardianFW"
+$Logs   = Join-Path $Root "logs\guardian-audit.jsonl"
+$Sealed = Join-Path $Root "sealed"
+$Fail   = Join-Path $Sealed "FAIL_SECURE.flag"
+
+$GuardianServices = @("GuardianControl","GuardianAgent")
+
+# ---- Utilities ----
+function Write-Audit($event, $data=@{}) {
+  $dir = Split-Path $Logs
+  if(!(Test-Path $dir)){ New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+  $rec = [pscustomobject]@{
+    tsUtc = (Get-Date).ToUniversalTime().ToString("o")
+    event = $event
+    data  = $data
+  }
+  ($rec | ConvertTo-Json -Compress -Depth 6) | Add-Content -LiteralPath $Logs -Encoding UTF8
+}
+
+function Ensure-ServiceRunning($name){
+  $svc = Get-Service -Name $name -ErrorAction SilentlyContinue
+  if($null -eq $svc){ return $false }
+  if($svc.Status -ne "Running"){
+    try { Start-Service $name -ErrorAction Stop; Write-Audit "service_restarted" @{service=$name} }
+    catch { return $false }
+  }
+  return $true
+}
+
+function AutoHeal-Firewall {
+  try {
+    & netsh advfirewall set allprofiles state on | Out-Null
+    Write-Audit "firewall_reasserted" @{}
+    return $true
+  } catch { return $false }
+}
+
+function AutoHeal-Dns {
+  try {
+    ipconfig /flushdns | Out-Null
+    Write-Audit "dns_cache_flushed" @{}
+    return $true
+  } catch { return $false }
+}
+
+function Enter-FailSecure($reason){
+  New-Item -ItemType File -Path $Fail -Force | Out-Null
+  Write-Audit "fail_secure_entered" @{reason=$reason}
+}
+
+# ---- Detect LOLBin execution via Event Log ----
+$since = (Get-Date).AddMinutes(-3)
+
+$events = Get-WinEvent -FilterHashtable @{
+  LogName = "Microsoft-Windows-PowerShell/Operational"
+  StartTime = $since
+} -ErrorAction SilentlyContinue
+
+$bad = $false
+
+foreach($e in $events){
+  $msg = $e.Message.ToLowerInvariant()
+
+  if($msg -match "netsh" -or
+     $msg -match "set-dnsclientserveraddress" -or
+     $msg -match "remove-netfirewallrule" -or
+     $msg -match "advfirewall reset" -or
+     $msg -match "dnscmd"){
+
+      # ---- DROP_4104_CHUNK_SPAM ----
+  # PowerShell ScriptBlock Logging (Event ID 4104) can generate “Creating Scriptblock text (x of y)” chunk spam.
+  # This is NOT a lolbin. Drop these before auditing to avoid log floods.
+  try {
+    $m = [string]$e.Message
+    if($m -match '(?i)^\s*Creating\s+Scriptblock\s+text\s*\(' -or
+       $m -match '(?i)\beventId\s*=\s*4104\b' -or
+       $m -match '(?i)\bScriptBlock\s+ID\b' -or
+       $m -match '(?i)\bCmdletization\b'){
+      continue
+    }
+  } catch { }
+  Write-Audit "lolbin_detected" @{message=$e.Message; eventId=$e.Id}
+    $bad = $true
+  }
+}
+
+if($bad){
+  $ok = $true
+
+  foreach($s in $GuardianServices){
+    if(-not (Ensure-ServiceRunning $s)){ $ok = $false }
+  }
+
+  if(-not (AutoHeal-Firewall)){ $ok = $false }
+  if(-not (AutoHeal-Dns)){ $ok = $false }
+
+  if(-not $ok){
+    Enter-FailSecure "autoheal_failed"
+  } else {
+    Write-Audit "autoheal_success" @{}
+  }
+}
+
+

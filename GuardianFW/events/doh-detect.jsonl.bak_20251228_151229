@@ -1,0 +1,11 @@
+{"ts":"2025-12-28T14:56:12","state":"TimeWait","remote":"8.8.8.8","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:12","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:22","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:22","state":"TimeWait","remote":"8.8.8.8","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:22","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:41","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:41","state":"TimeWait","remote":"8.8.8.8","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:56:41","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"Idle"}
+{"ts":"2025-12-28T14:57:39","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"unknown","strength":"weak"}
+{"ts":"2025-12-28T14:57:47","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"unknown","strength":"weak"}
+{"ts":"2025-12-28T15:03:55","state":"TimeWait","remote":"1.1.1.1","pid":0,"proc":"unknown","strength":"weak"}

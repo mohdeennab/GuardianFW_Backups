@@ -1,0 +1,74 @@
+﻿$ErrorActionPreference="Stop"
+$root="C:\ProgramData\GuardianFW"
+$hashBase="$root\integrity\integrity-hashes.json"
+$evDir="$root\evidence\integrity"
+New-Item -ItemType Directory -Path $evDir -Force | Out-Null
+
+# If baseline missing, create it once (safe) then proceed
+if (!(Test-Path $hashBase)) {
+  try {
+    & "$root\engine\integrity-hash-baseline.ps1" | Out-Null
+  } catch {
+    throw "Missing integrity baseline and failed to create it: $hashBase"
+  }
+}
+
+$drift=@()
+$missing=@()
+
+$base = Get-Content $hashBase -Raw | ConvertFrom-Json
+
+# GFW_EXCLUDE_VOLATILE: exclude frequently-changing wrappers during development
+$excludePaths = @(
+  "C:\ProgramData\GuardianFW\engine\run-health.ps1"
+)
+try {
+  if($null -ne $base -and $null -ne $base.sha256){
+    $base.sha256 = @($base.sha256 | Where-Object { $_.path -and ($excludePaths -notcontains $_.path) })
+  }
+} catch { }
+foreach($f in $base.sha256){
+  if(!(Test-Path $f.path)){
+    $missing += $f.path
+    continue
+  }
+  $h = (Get-FileHash -Algorithm SHA256 -Path $f.path).Hash
+  if($h -ne $f.sha256){
+    $drift += @{ type="file_hash"; path=$f.path; expected=$f.sha256; actual=$h }
+  }
+}
+
+$tasks = @("GuardianFW-AutoHeal-Firewall","GuardianFW-AutoHeal-Registry","GuardianFW-AutoHeal-Integrity")
+foreach($t in $tasks){
+  $q = (schtasks /Query /TN $t /FO LIST /V) 2>$null
+  if(!$q){
+    $drift += @{ type="task"; task=$t; issue="missing" }
+    continue
+  }
+  $enabled = ($q | Select-String '^Status:\s+Ready|^Scheduled Task State:\s+Enabled' -Quiet)
+  if(-not $enabled){
+    $drift += @{ type="task"; task=$t; issue="disabled" }
+  }
+}
+
+$profiles = Get-NetFirewallProfile
+foreach($p in $profiles){
+  if($p.Enabled -eq $false){
+    $drift += @{ type="firewall_profile"; profile=$p.Name; issue="disabled" }
+  }
+}
+
+$result=@{
+  timestamp=(Get-Date).ToString("s")
+  status= if($drift.Count -eq 0 -and $missing.Count -eq 0){"OK"}
+$resultObj = [pscustomobject]$result
+else{"DRIFT"}
+  missing=$missing
+  drift=$drift
+}
+
+$resultObj | ConvertTo-Json -Depth 10 | Out-File "$evDir\verify-$(Get-Date -Format yyyyMMdd-HHmmss).json" -Encoding UTF8
+$result
+
+$resultObj
+

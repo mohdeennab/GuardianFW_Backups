@@ -1,0 +1,32 @@
+﻿{
+    "component":  "registry",
+    "verify":  {
+                   "status":  "DRIFT",
+                   "timestamp":  "2025-12-26T18:51:37",
+                   "missingKeys":  [
+
+                                   ],
+                   "drift":  [
+                                 {
+                                     "issue":  "modified",
+                                     "key":  "HKLM:\\SOFTWARE\\Policies\\Google\\Chrome",
+                                     "actual":  "automatic",
+                                     "value":  "DnsOverHttpsMode",
+                                     "expected":  "off"
+                                 }
+                             ]
+               },
+    "timestamp":  "2025-12-26T18:51:37",
+    "post":  {
+                 "status":  "OK",
+                 "timestamp":  "2025-12-26T18:51:37",
+                 "missingKeys":  [
+
+                                 ],
+                 "drift":  [
+
+                           ]
+             },
+    "action":  "heal_attempted",
+    "heal_out":  "\r\nName                           Value                                                                                   \r\n----                           -----                                                                                   \r\nchanged                        {System.Collections.Hashtable, System.Collections.Hashtable, System.Collections.Hasht...\r\ntimestamp                      2025-12-26T18:51:37                                                                     \r\naction                         heal                                                                                    \r\n\r\n\r\n"
+}

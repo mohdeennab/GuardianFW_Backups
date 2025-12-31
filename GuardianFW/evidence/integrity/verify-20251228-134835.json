@@ -1,0 +1,31 @@
+﻿{
+    "timestamp":  "2025-12-28T13:48:35",
+    "drift":  [
+                  {
+                      "expected":  "115CAB518A96C779477248C500F9A76D9EB1D9A557A111F1A2D1128E8362D0CB",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\Enforce-DnsPolicy.ps1",
+                      "actual":  "1596149B6C9B412134560A06C7F444AC6370BD556038B66013003C0AD96097B9",
+                      "type":  "file_hash"
+                  },
+                  {
+                      "expected":  "DB21188907DFBA5DD84FB5D09869C076C84C4ECB4B1BAE5203757AC01BEE92CD",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health-phase1.ps1",
+                      "actual":  "B4AF5DBF8A0A71EE3207A6C8B63209718E1EDE39A54BAC1752B1E8E2B105156B",
+                      "type":  "file_hash"
+                  },
+                  {
+                      "expected":  "DB1DC9C8BEF98A894B9CBE52B1B3C2CEADD5FB0B4DFD7564395632CE74FD8D3B",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\verify-integrity.ps1",
+                      "actual":  "8A0698F045970714629F5CA9EE052FE32506DE76FFB03231E5FF960377AC218F",
+                      "type":  "file_hash"
+                  }
+              ],
+    "warnings":  [
+
+                 ],
+    "missing":  [
+
+                ],
+    "mode":  "PROD",
+    "status":  "DRIFT"
+}

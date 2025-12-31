@@ -1,0 +1,585 @@
+==== 2025-12-28 13:30:49.07 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:30:49.40 END (task) ====
+==== 2025-12-28 13:30:52.10 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:30:52.53 END (task) ====
+==== 2025-12-28 13:30:55.13 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:30:55.57 END (task) ====
+==== 2025-12-28 13:31:36.68 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:31:37.10 END (task) ====
+==== 2025-12-28 13:32:36.70 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:32:37.17 END (task) ====
+==== 2025-12-28 13:33:36.71 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:33:37.15 END (task) ====
+==== 2025-12-28 13:34:36.72 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:140 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:158 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:196 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:218 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:223 char:32
++ $ErrorActionPreference = "Stop"
++                                ~
+Missing closing ')' in expression.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:281 char:6
++     }
++      ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:299 char:4
++   }
++    ~
+The Try statement is missing its Catch or Finally block.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:304 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:312 char:3
++   } catch {}
++   ~
+Unexpected token '}' in expression or statement.
+
+At C:\ProgramData\GuardianFW\engine\run-health-phase1.ps1:316 char:1
++ }
++ ~
+Unexpected token '}' in expression or statement.
+
+Not all parse errors were reported.  Correct the reported errors and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:34:37.24 END (task) ====
+==== 2025-12-28 13:35:06.11 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+==== 2025-12-28 13:35:36.74 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:35:37.23 END (task) ====
+==== 2025-12-28 13:36:21.96 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[WARN] Missing probe: C:\ProgramData\GuardianFW\engine\Detect-FWDisabled.ps1
+==== 2025-12-28 13:36:36.73 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:36:37.42 END (task) ====
+==== 2025-12-28 13:36:46.38 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[WARN] Missing probe: C:\ProgramData\GuardianFW\engine\Detect-FWDisabled.ps1
+==== 2025-12-28 13:37:36.73 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:37:37.32 END (task) ====
+==== 2025-12-28 13:38:36.76 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The term 'Add-ContentWithRetry' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:38:38.29 END (task) ====
+==== 2025-12-28 13:39:36.75 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The term 'Add-ContentWithRetry' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:39:37.87 END (task) ====
+==== 2025-12-28 13:40:36.77 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The term 'Add-ContentWithRetry' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:40:37.80 END (task) ====
+==== 2025-12-28 13:41:36.81 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:41:40.85 END (task) ====
+==== 2025-12-28 13:41:43.50 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[INFO] Missing probe (skipped): C:\ProgramData\GuardianFW\engine\apply-dns-policy-phase3.ps1
+Probe Check-DnsDrift.ps1 exit=0
+[[TASKTRACE_ERROR]] Probe exception: verify-integrity.ps1 ::   timestamp : 2025-12-28T13:41:45 drift     : {System.Collections.Hashtable, System.Collections.Hashtable} warnings  : {} missing   : {} mode      : PROD status    : DRIFT    
+[[TASKTRACE_ERROR]] Probe exception: verify-firewall.ps1 ::  Name                           Value                                                                                    ----                           -----                                                                                    found                          7                                                                                        timestamp                      2025-12-28T13:41:48                                                                      modified                       {}                                                                                       expected                       7                                                                                        missing                        {}                                                                                       status                         OK                                                                                         
+[[TASKTRACE_ERROR]] Probe exception: verify-registry.ps1 ::  Name                           Value                                                                                    ----                           -----                                                                                    status                         OK                                                                                       timestamp                      2025-12-28T13:41:49                                                                      missingKeys                    {}                                                                                       drift                          {}                                                                                         
+[[TASKTRACE_ERROR]] Probe exception: health.ps1 :: HEALTH: DRIFT  (firewall=OK, registry=OK, integrity=DRIFT) 
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=ERROR exit=50
+[GFW] Probe exception: verify-integrity.ps1 ::   timestamp : 2025-12-28T13:41:45 drift     : {System.Collections.Hashtable, System.Collections.Hashtable} warnings  : {} missing   : {} mode      : PROD status    : DRIFT    
+[GFW] Probe exception: verify-firewall.ps1 ::  Name                           Value                                                                                    ----                           -----                                                                                    found                          7                                                                                        timestamp                      2025-12-28T13:41:48                                                                      modified                       {}                                                                                       expected                       7                                                                                        missing                        {}                                                                                       status                         OK                                                                                         
+[GFW] Probe exception: verify-registry.ps1 ::  Name                           Value                                                                                    ----                           -----                                                                                    status                         OK                                                                                       timestamp                      2025-12-28T13:41:49                                                                      missingKeys                    {}                                                                                       drift                          {}                                                                                         
+[GFW] Probe exception: health.ps1 :: HEALTH: DRIFT  (firewall=OK, registry=OK, integrity=DRIFT) 
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 13:41:52.69 END (task) ====
+==== 2025-12-28 13:41:52.87 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:41:56.52 END (task) ====
+==== 2025-12-28 13:42:36.79 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:42:40.92 END (task) ====
+==== 2025-12-28 13:43:36.78 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:43:40.54 END (task) ====
+==== 2025-12-28 13:44:13.16 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:44:17.22 END (task) ====
+==== 2025-12-28 13:44:25.79 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+==== 2025-12-28 13:44:36.78 START (task) ====
+nt authority\system
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+[[TASKTRACE_ERROR]] The process cannot access the file 'C:\ProgramData\GuardianFW\logs\health-task.out' because it is being used by another process.
+[[TASKTRACE_LASTEXIT]] 
+AFTER_POWERSHELL
+==== 2025-12-28 13:44:40.70 END (task) ====

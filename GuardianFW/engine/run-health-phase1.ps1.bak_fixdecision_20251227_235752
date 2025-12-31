@@ -1,0 +1,208 @@
+﻿# run-health-phase1.ps1
+# Phase 1 deterministic wrapper + mutex + DNS enforcement + DNS drift PRE/POST + gated repair + single evidence
+
+$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+# ===== BEGIN GFW DECISION HEARTBEAT INTEGRATION =====
+# Prefer an explicit decision heartbeat file for the "fresh decision" check.
+# This avoids false warnings when no enforcement changes occur.
+try {
+  $hbScript = "C:\ProgramData\GuardianFW\engine\write-decision-heartbeat.ps1"
+  $hbFile   = "C:\ProgramData\GuardianFW\evidence\decision\decision-latest.json"
+
+  # If wrapper has a decision path variable, redirect it to our heartbeat file.
+  if (Get-Variable -Name decisionPath -Scope Local -ErrorAction SilentlyContinue) { $decisionPath = $hbFile }
+  if (Get-Variable -Name DecisionPath -Scope Local -ErrorAction SilentlyContinue) { $DecisionPath = $hbFile }
+
+  # Always refresh heartbeat so the wrapper sees a fresh timestamp
+  if(Test-Path -LiteralPath $hbScript){
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $hbScript -DecisionPath $hbFile -Mode "PROD" -Status "OK" -Note "heartbeat" | Out-Null
+  }
+} catch {}
+# ===== END GFW DECISION HEARTBEAT INTEGRATION =====
+
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.ExitCodes.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.Evidence.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.Config.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.DB.psm1" -Force
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.Map.psm1" -Force
+
+# drift helpers (safe; script defines Check-GfwDnsDrift)
+. "C:\ProgramData\GuardianFW\engine\Check-DnsDrift.ps1"
+
+# ---- Mutex: prevent overlapping runs ----
+$mutexName = "Local\GuardianFW_Health_Lock"
+$mutex = $null
+$hasLock = $false
+
+$cor   = ""
+$start = Get-Date
+
+# policy mode (safe read)
+$policyMode = "enforce"
+try {
+  $pp = "C:\ProgramData\GuardianFW\policy\dns-policy.json"
+  if(Test-Path $pp){
+    $po = (Get-Content -LiteralPath $pp -Raw -Encoding UTF8) | ConvertFrom-Json
+    if($po.mode){ $policyMode = ([string]$po.mode).ToLower() }
+  }
+} catch { $policyMode = "enforce" }
+
+try {
+  try { $mutex = New-Object System.Threading.Mutex($false, $mutexName) } catch { $mutex = $null }
+
+  if($null -ne $mutex){ $hasLock = $mutex.WaitOne(5000) } else { $hasLock = $true }
+  if(-not $hasLock){ exit $EXIT_NOOP }
+
+  # ---- DNS enforcement (fold into details; no extra evidence) ----
+  $dns = @{ status="NOT_RUN" }
+  $dnsPolicyVersion = $null
+  try {
+    . "C:\ProgramData\GuardianFW\engine\Enforce-DnsPolicy.ps1"
+    $r = Apply-GfwDnsPolicy
+    if($r -is [hashtable]){ $dns = $r } else { $dns = @{ status="BAD_RETURN_TYPE" } }
+
+    # read policy version (safe)
+    try {
+      $p = "C:\ProgramData\GuardianFW\policy\dns-policy.json"
+      if(Test-Path $p){
+        $po = (Get-Content -LiteralPath $p -Raw -Encoding UTF8) | ConvertFrom-Json
+        $dnsPolicyVersion = $po.version
+      }
+    } catch { $dnsPolicyVersion = $null }
+
+  } catch {
+    $dns = @{ status="FAIL"; error=$_.Exception.Message }
+  }
+
+  # ---- DNS drift PRE/POST; gated repair ----
+  $drift_pre  = @{ drift=$false; reason="NOT_RUN" }
+  $drift_post = @{ drift=$false; reason="NOT_RUN" }
+  $dns_repaired = $false
+
+  # PRE
+  try {
+    if(Get-Command Check-GfwDnsDrift -ErrorAction SilentlyContinue){
+      $dpre = Check-GfwDnsDrift
+      if($dpre -is [hashtable]){ $drift_pre = $dpre } else { $drift_pre = @{ drift=$false; reason="BAD_RETURN_TYPE_PRE" } }
+    } else {
+      $drift_pre = @{ drift=$false; reason="NO_FUNCTION" }
+    }
+  } catch {
+    $drift_pre = @{ drift=$false; reason="DRIFT_PRE_FAIL"; error=$_.Exception.Message }
+  }
+
+  # Repair only in enforce mode AND only if pre drift is true
+  $preDrift = $false
+  try { if($drift_pre -is [hashtable] -and $drift_pre.ContainsKey("drift")){ $preDrift = [bool]$drift_pre.drift } } catch {}
+
+  if($policyMode -eq "enforce" -and $preDrift -eq $true){
+    try {
+      $r2 = Apply-GfwDnsPolicy
+      if($r2 -is [hashtable]){ $dns = $r2 }
+    } catch { }
+  }
+
+  # POST
+  try {
+    if(Get-Command Check-GfwDnsDrift -ErrorAction SilentlyContinue){
+      $dpost = Check-GfwDnsDrift
+      if($dpost -is [hashtable]){ $drift_post = $dpost } else { $drift_post = @{ drift=$false; reason="BAD_RETURN_TYPE_POST" } }
+    } else {
+      $drift_post = @{ drift=$false; reason="NO_FUNCTION" }
+    }
+  } catch {
+    $drift_post = @{ drift=$false; reason="DRIFT_POST_FAIL"; error=$_.Exception.Message }
+  }
+
+  $postDrift = $false
+  try { if($drift_post -is [hashtable] -and $drift_post.ContainsKey("drift")){ $postDrift = [bool]$drift_post.drift } } catch {}
+
+  $dns_repaired = ($policyMode -eq "enforce" -and $preDrift -eq $true -and $postDrift -eq $false)
+
+  # 1) Baseline integrity
+  $b = Test-GfwBaseline
+  if(-not $b.ok){
+    $cor = Write-GfwEvidence `
+      -Component "health" `
+      -Action "verify_baseline" `
+      -Result "TAMPER" `
+      -ExitCode $EXIT_TAMPER `
+      -Details $b `
+      -CorrelationId $cor
+    exit $EXIT_TAMPER
+  }
+
+  # 2) Optional DB init (no evidence here)
+  $sqlite = "C:\ProgramData\GuardianFW\tools\sqlite3.exe"
+  $sqlite_status = "missing"
+  $sqlite_error  = ""
+  if(Test-Path $sqlite){
+    $sqlite_status = "present"
+    try { Initialize-GfwDb } catch { $sqlite_error = $_.Exception.Message }
+  }
+
+  # 3) Call inner health
+  $inner = "C:\ProgramData\GuardianFW\engine\run-health.ps1"
+  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $inner
+  $code = $LASTEXITCODE
+
+  # 4) Canonicalize + single evidence
+  $elapsedMs = [int]((Get-Date) - $start).TotalMilliseconds
+  $canon = Convert-GfwInnerExitToCanonical -InnerExit $code
+
+  $details = @{
+    inner_exit         = $code
+    canonical          = $canon.result
+    canonical_exit     = [int]$canon.exit_code
+    elapsed_ms         = $elapsedMs
+    sqlite             = $sqlite_status
+
+    dns_status         = $dns.status
+    dns_policy         = "C:\ProgramData\GuardianFW\policy\dns-policy.json"
+    dns_hosts          = "$env:WINDIR\System32\drivers\etc\hosts"
+    dns_count          = $(if($dns -is [hashtable] -and $dns.ContainsKey("count")){ $dns.count } else { 0 })
+    dns_policy_version = $(if($null -ne $dnsPolicyVersion){ [int]$dnsPolicyVersion } else { 0 })
+
+    dns_drift          = $postDrift
+    dns_drift_reason   = $(if($drift_post -is [hashtable] -and $drift_post.ContainsKey("reason")){ [string]$drift_post.reason } else { "UNKNOWN" })
+    dns_drift_pre      = $preDrift
+    dns_drift_post     = $postDrift
+    dns_expected_hash  = $(if($drift_post -is [hashtable] -and $drift_post.ContainsKey("expected_hash")){ [string]$drift_post.expected_hash } else { "" })
+    dns_current_hash   = $(if($drift_post -is [hashtable] -and $drift_post.ContainsKey("current_hash")) { [string]$drift_post.current_hash  } else { "" })
+
+    dns_repaired       = [bool]$dns_repaired
+    dns_would_change   = $(if($dns -is [hashtable] -and $dns.ContainsKey("would_change")){ [bool]$dns.would_change } else { $false })
+  }
+
+  if($dns -is [hashtable] -and $dns.ContainsKey("error")){ $details.dns_error = $dns.error }
+  if($drift_pre  -is [hashtable] -and $drift_pre.ContainsKey("error")){  $details.dns_drift_pre_error  = $drift_pre.error }
+  if($drift_post -is [hashtable] -and $drift_post.ContainsKey("error")){ $details.dns_drift_post_error = $drift_post.error }
+  if($sqlite_error){ $details.sqlite_error = $sqlite_error }
+
+  $cor = Write-GfwEvidence `
+    -Component "health" `
+    -Action "health_cycle" `
+    -Result $canon.result `
+    -ExitCode ([int]$canon.exit_code) `
+    -Details $details `
+    -CorrelationId $cor
+
+  exit $code
+
+} catch {
+  $cor = Write-GfwEvidence `
+    -Component "health" `
+    -Action "exception" `
+    -Result "FAIL" `
+    -ExitCode $EXIT_FAIL `
+    -Details @{ error=$_.Exception.Message; stack=$_.ScriptStackTrace } `
+    -CorrelationId $cor
+  exit $EXIT_FAIL
+
+} finally {
+  if($hasLock -and $null -ne $mutex){ try { $mutex.ReleaseMutex() } catch {} }
+  if($null -ne $mutex){ try { $mutex.Dispose() } catch {} }
+}
+

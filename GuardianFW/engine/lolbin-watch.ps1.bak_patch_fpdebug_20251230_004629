@@ -1,0 +1,395 @@
+﻿function Write-DebugLine {
+  param([string]$Msg)
+  try {
+    $p = "C:\ProgramData\GuardianFW\logs\lolbin-watch.debug.log"
+    $dir = Split-Path -Parent $p
+    if($dir -and -not (Test-Path -LiteralPath $dir)){
+      New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+    $line = ("{0}Z {1}" -f [DateTime]::UtcNow.ToString("s"), $Msg)
+    Add-Content -LiteralPath $p -Value $line -Encoding UTF8
+  } catch { }
+}
+
+Write-DebugLine ("DBG_SCRIPT_START user={0} pid={1}" -f $env:USERNAME, $PID)
+# ---- Fingerprint writer (atomic temp+move) ----
+function Write-FingerprintMap {
+  param(
+    [Parameter(Mandatory=$true)][hashtable]$Map,
+    [Parameter(Mandatory=$true)][string]$File
+  )
+  try {
+    $dir = Split-Path -Parent $File
+    if($dir -and -not (Test-Path -LiteralPath $dir)){
+      New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+    $tmp = ($File + ".tmp")
+    Write-DebugLine ("DBG_FP_WRITE_PRE file={0}" -f $Global:EventFingerprintFile)
+    ($Map | ConvertTo-Json -Depth 4) | Set-Content -LiteralPath $tmp -Encoding UTF8 -Force
+    Move-Item -LiteralPath $tmp -Destination $File -Force
+    try { Write-Audit "fingerprint_write_ok" @{ file=$File } } catch {}
+  } catch {
+    try { Write-Audit "fingerprint_write_failed" @{ file=$File; error=$_.Exception.Message } } catch {}
+  }
+}
+Set-StrictMode -Version Latest
+$ErrorActionPreference="Stop"
+
+$Root   = "C:\ProgramData\GuardianFW"
+$Logs   = Join-Path $Root "logs\guardian-audit.jsonl"
+
+
+# ---- DEBUG HEARTBEAT (raw append; independent of Write-Audit) ----
+try {
+  $rec = @{
+    tsUtc = ([DateTime]::UtcNow.ToString("o"))
+    event = "lolbin_watch_heartbeat"
+    data  = @{ pid=$PID; user=[Environment]::UserName }
+  }
+  $line = (($rec | ConvertTo-Json -Compress -Depth 6) + "`r`n")
+
+  $dir2 = Split-Path -Parent $Logs
+  if($dir2 -and -not (Test-Path -LiteralPath $dir2)){
+    New-Item -ItemType Directory -Path $dir2 -Force | Out-Null
+  }
+
+  $fs = New-Object System.IO.FileStream($Logs,[System.IO.FileMode]::OpenOrCreate,[System.IO.FileAccess]::Write,[System.IO.FileShare]::ReadWrite)
+  try{
+    $null = $fs.Seek(0,[System.IO.SeekOrigin]::End)
+    $sw = New-Object System.IO.StreamWriter($fs,[System.Text.Encoding]::UTF8)
+    try { $sw.Write($line); $sw.Flush() } finally { $sw.Dispose() }
+  } finally { $fs.Dispose() }
+} catch { }
+$Sealed = Join-Path $Root "sealed"
+$Fail   = Join-Path $Sealed "FAIL_SECURE.flag"
+
+
+# ---- GLOBAL EVENT FINGERPRINT CACHE (shared across GuardianFW) ----
+$Global:EventFingerprintTtlSeconds = 60
+$Global:EventFingerprintFile = "C:\ProgramData\GuardianFW\state\event-fingerprint.json"
+
+function Should-LogEvent {
+  param([Parameter(Mandatory=$true)][string]$FingerprintKey)
+    Write-DebugLine ("DBG_SHOULDLOG_ENTER key={0}" -f $FingerprintKey)
+
+  try { Write-Audit "should_logevent_marker" @{ key=$FingerprintKey; when=([DateTime]::UtcNow.ToString("o")) } } catch {}
+
+
+  $Global:EventFingerprintTtlSeconds = 60
+  $Global:EventFingerprintFile = "C:\ProgramData\GuardianFW\state\event-fingerprint.json"
+
+  $now = [DateTime]::UtcNow
+  $stateDir = Split-Path -Parent $Global:EventFingerprintFile
+  if($stateDir -and -not (Test-Path -LiteralPath $stateDir)){
+    New-Item -ItemType Directory -Path $stateDir -Force | Out-Null
+  }
+
+  $mtx = New-Object System.Threading.Mutex($false,"Global\GuardianFW_EventFingerprint")
+  $got = $false
+  try {
+    $got = $mtx.WaitOne(5000)
+  } catch {
+    $got = $false
+  }
+
+  try {
+    $map = @{}
+    if(Test-Path -LiteralPath $Global:EventFingerprintFile){
+      try {
+        $raw = Get-Content -LiteralPath $Global:EventFingerprintFile -Raw -Encoding UTF8
+        if($raw){
+          $obj = $raw | ConvertFrom-Json -ErrorAction Stop
+          if($obj){
+            foreach($p in $obj.PSObject.Properties){
+              $map[$p.Name] = [string]$p.Value
+            }
+          }
+        }
+      } catch {
+        $map = @{}
+      }
+    }
+
+    # TTL check
+    if($map.ContainsKey($FingerprintKey)){
+      try {
+        $ts = [DateTime]::Parse([string]$map[$FingerprintKey])
+        if( ($now - $ts).TotalSeconds -lt $Global:EventFingerprintTtlSeconds ){
+          return $false
+        }
+      } catch { }
+    }
+
+    # Allow + write fingerprint (ALWAYS)
+    $map[$FingerprintKey] = $now.ToString("o")
+    try {
+      $tmp = ($Global:EventFingerprintFile + ".tmp")
+      ($map | ConvertTo-Json -Depth 4) | Set-Content -LiteralPath $tmp -Encoding UTF8 -Force
+      Move-Item -LiteralPath $tmp -Destination $Global:EventFingerprintFile -Force
+      Write-DebugLine ("DBG_FP_WRITE_POST ok file={0}" -f $Global:EventFingerprintFile)
+      try { Write-Audit "fingerprint_write_ok" @{ file=$Global:EventFingerprintFile; key=$FingerprintKey } } catch {}
+    } catch {
+      try { Write-Audit "fingerprint_write_failed" @{ file=$Global:EventFingerprintFile; key=$FingerprintKey; error=$_.Exception.Message } } catch {}
+    }
+
+    return $true
+  } finally {
+    if($got){ try { $mtx.ReleaseMutex() } catch {} }
+    $mtx.Dispose()
+  }
+}
+$GuardianServices = @("GuardianControl","GuardianAgent")
+
+# ---- Utilities ----
+function Write-Audit($event, $data=@{}) {
+  $dir = Split-Path $Logs
+  if(!(Test-Path $dir)){ New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+  $rec = [pscustomobject]@{
+    tsUtc = (Get-Date).ToUniversalTime().ToString("o")
+    event = $event
+    data  = $data
+  }
+try { Write-Audit "script_start_marker" @{ when=([DateTime]::UtcNow.ToString("o")); user=$env:USERNAME; pid=$PID } } catch {}
+
+  # ---- AUDIT_MUTEX_LOCK ----
+$mutexName = "Global\GuardianFW_AuditLock"
+$mtx = $null
+$locked = $false
+try {
+  $mtx = New-Object System.Threading.Mutex($false, $mutexName)
+  $locked = $mtx.WaitOne(5000)
+} catch { $locked = $false }
+
+if($locked){
+  try {
+# --- Safe append with mutex + retry (prevents file-lock failures) ---
+$line = (($rec | ConvertTo-Json -Compress -Depth 6) + "`r`n")
+$mtx2 = New-Object System.Threading.Mutex($false,"Global\GuardianFW_AuditWrite")
+$got2 = $false
+try{
+  $got2 = $mtx2.WaitOne(5000)
+  for($i=0; $i -lt 40; $i++){
+    try{
+      $dir2 = Split-Path -Parent $Logs
+      if($dir2 -and -not (Test-Path -LiteralPath $dir2)){
+        New-Item -ItemType Directory -Path $dir2 -Force | Out-Null
+      }
+      $fs = New-Object System.IO.FileStream($Logs,[System.IO.FileMode]::OpenOrCreate,[System.IO.FileAccess]::Write,[System.IO.FileShare]::ReadWrite)
+      try{
+        $null = $fs.Seek(0,[System.IO.SeekOrigin]::End)
+        $sw = New-Object System.IO.StreamWriter($fs,[System.Text.Encoding]::UTF8)
+        try { $sw.Write($line); $sw.Flush() } finally { $sw.Dispose() }
+      } finally { $fs.Dispose() }
+      break
+    } catch [System.IO.IOException] {
+      Start-Sleep -Milliseconds 50
+      continue
+    } catch {
+      break
+    }
+  }
+} finally {
+  if($got2){ try{ $mtx2.ReleaseMutex() } catch {} }
+  $mtx2.Dispose()
+}
+  } finally {
+    try { $mtx.ReleaseMutex() } catch {}
+    try { $mtx.Dispose() } catch {}
+  }
+} else {
+# --- Safe append with mutex + retry (prevents file-lock failures) ---
+$line = (($rec | ConvertTo-Json -Compress -Depth 6) + "`r`n")
+$mtx2 = New-Object System.Threading.Mutex($false,"Global\GuardianFW_AuditWrite")
+$got2 = $false
+try{
+  $got2 = $mtx2.WaitOne(5000)
+  for($i=0; $i -lt 40; $i++){
+    try{
+      $dir2 = Split-Path -Parent $Logs
+      if($dir2 -and -not (Test-Path -LiteralPath $dir2)){
+        New-Item -ItemType Directory -Path $dir2 -Force | Out-Null
+      }
+      $fs = New-Object System.IO.FileStream($Logs,[System.IO.FileMode]::OpenOrCreate,[System.IO.FileAccess]::Write,[System.IO.FileShare]::ReadWrite)
+      try{
+        $null = $fs.Seek(0,[System.IO.SeekOrigin]::End)
+        $sw = New-Object System.IO.StreamWriter($fs,[System.Text.Encoding]::UTF8)
+        try { $sw.Write($line); $sw.Flush() } finally { $sw.Dispose() }
+      } finally { $fs.Dispose() }
+      break
+    } catch [System.IO.IOException] {
+      Start-Sleep -Milliseconds 50
+      continue
+    } catch {
+      break
+    }
+  }
+} finally {
+  if($got2){ try{ $mtx2.ReleaseMutex() } catch {} }
+  $mtx2.Dispose()
+}
+}
+}
+
+function Ensure-ServiceRunning($name){
+  $svc = Get-Service -Name $name -ErrorAction SilentlyContinue
+  if($null -eq $svc){ return $false }
+  if($svc.Status -ne "Running"){
+    try { Start-Service $name -ErrorAction Stop; Write-Audit "service_restarted" @{service=$name} }
+    catch { return $false }
+  }
+  return $true
+}
+
+function AutoHeal-Firewall {
+  try {
+    & netsh advfirewall set allprofiles state on | Out-Null
+    Write-Audit "firewall_reasserted" @{}
+    return $true
+  } catch { return $false }
+}
+
+function AutoHeal-Dns {
+  try {
+    ipconfig /flushdns | Out-Null
+    Write-Audit "dns_cache_flushed" @{}
+    return $true
+  } catch { return $false }
+}
+
+function Enter-FailSecure($reason){
+  New-Item -ItemType File -Path $Fail -Force | Out-Null
+  Write-Audit "fail_secure_entered" @{reason=$reason}
+}
+
+# ---- Detect LOLBin execution via Event Log ----
+$since = (Get-Date).AddMinutes(-3)
+
+$events = Get-WinEvent -FilterHashtable @{
+  LogName = "Microsoft-Windows-PowerShell/Operational"
+  StartTime = $since
+} -ErrorAction SilentlyContinue
+
+$bad = $false
+
+foreach($e in $events){
+
+  # ---- HARD FILTER: ignore PowerShell ScriptBlock logging (4104) ----
+  if($e.Id -eq 4104){
+    continue
+  }
+
+  # ---- HARD FILTER: ignore PowerShell ScriptBlock logging (4104) ----
+  if($e.Id -eq 4104){
+    continue
+  }
+  $msg = $e.Message.ToLowerInvariant()
+
+  if($msg -match "netsh" -or
+     $msg -match "set-dnsclientserveraddress" -or
+     $msg -match "remove-netfirewallrule" -or
+     $msg -match "advfirewall reset" -or
+     $msg -match "dnscmd"){
+
+      # ---- DROP_4104_CHUNK_SPAM ----
+  # PowerShell ScriptBlock Logging (Event ID 4104) can generate “Creating Scriptblock text (x of y)” chunk spam.
+  # This is NOT a lolbin. Drop these before auditing to avoid log floods.
+  try {
+    $m = [string]$e.Message
+    if($m -match '(?i)^\s*Creating\s+Scriptblock\s+text\s*\(' -or
+       $m -match '(?i)\beventId\s*=\s*4104\b' -or
+       $m -match '(?i)\bScriptBlock\s+ID\b' -or
+       $m -match '(?i)\bCmdletization\b'){
+      continue
+    }
+  } catch { }
+        # ---- GuardianFW self-execution awareness ----
+      try {
+        # Suppress if GuardianFW initiated this action
+        $selfIndicators = @(
+          "C:\ProgramData\GuardianFW\",
+          "GuardianFW",
+          "GuardianControl",
+          "GuardianAgent",
+          "GuardianFW-",
+          "process-dns-enforce.ps1",
+          "lolbin-watch.ps1"
+        )
+
+        foreach($i in $selfIndicators){
+          if($e.Message -like "*$i*"){
+            continue 2
+          }
+        }
+
+        # Suppress if executed as SYSTEM (Guardian scheduled tasks)
+        if($e.UserId){
+          $sid = $e.UserId.Value
+          if($sid -eq "S-1-5-18"){  # LocalSystem
+            continue
+          }
+        }
+      } catch { }
+      Write-Audit "lolbin_detected" @{message=$e.Message; eventId=$e.Id}
+    $bad = $true
+  }
+}
+
+if($bad){
+  $ok = $true
+
+  foreach($s in $GuardianServices){
+    if(-not (Ensure-ServiceRunning $s)){ $ok = $false }
+  }
+
+  if(-not (AutoHeal-Firewall)){ $ok = $false }
+  if(-not (AutoHeal-Dns)){ $ok = $false }
+
+  if(-not $ok){
+    Enter-FailSecure "autoheal_failed"
+  } else {
+  # ---- TCP 443 OBSERVATION (fingerprinted TTL; SAFE) ----
+  try {
+    $n443 = (Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue | Where-Object { $_.RemotePort -eq 443 } | Measure-Object).Count
+    Write-Audit "tcp443_scan_count" @{ count=$n443 }
+  } catch {}
+
+  try {
+    $tcp443 = Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue |
+              Where-Object { $_.RemotePort -eq 443 }
+
+    foreach($c in $tcp443){
+      $pid = [int]$c.OwningProcess
+      if($pid -le 4){ continue }
+      $p = Get-Process -Id $pid -ErrorAction SilentlyContinue
+      if(!$p -or !$p.Path){ continue }
+      $img = [string]$p.Path
+      $rip = [string]$c.RemoteAddress
+      if(-not $rip){ continue }
+      $fp = 'tcp443_seen|' + $pid + '|' + $img + '|' + $rip
+      if(Should-LogEvent $fp){
+        $fp = "tcp443_seen|$pid|$img|$rip"
+        if(Should-LogEvent $fp){
+        Write-Audit 'tcp443_seen' @{ pid=$pid; image=$img; remote=$rip; provider=$null }
+      }
+        }
+    }
+  } catch {
+    Write-Audit 'tcp443_seen_failed' @{ error=$_.Exception.Message }
+  }
+
+    Write-Audit "autoheal_success" @{}
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

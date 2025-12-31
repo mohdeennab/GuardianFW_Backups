@@ -1,0 +1,50 @@
+﻿{
+    "decision":  {
+                     "timestamp":  "2025-12-27T00:49:56",
+                     "out_file":  "decision-20251227-004956-056143.json",
+                     "decision_id":  "0561431c-eee6-4530-bac5-a7b7b4f8ff84",
+                     "out_path":  "C:\\ProgramData\\GuardianFW\\evidence\\decisions\\decision-20251227-004956-056143.json",
+                     "intent_id":  "INTENT_DOH_EVASION",
+                     "status":  "RECENT",
+                     "file":  "decision-20251227-004956-056143.json"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T00:50:10",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "status":  "DRIFT",
+                      "timestamp":  "2025-12-27T00:50:11",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+                                    {
+                                        "expected":  "9833E0BB1AC0C32A81FB245283742C4019C073A6B56EF1DA79FB1D4B20193C51",
+                                        "path":  "C:\\ProgramData\\GuardianFW\\engine\\health.ps1",
+                                        "actual":  "1814860197CA105A8BA7C8FF7982AEFB25E45022EBA8F6D2AF0F1251BDFB308D",
+                                        "type":  "file_hash"
+                                    }
+                                ]
+                  },
+    "timestamp":  "2025-12-27T00:50:11",
+    "overall":  "DRIFT",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T00:50:04",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 }
+}

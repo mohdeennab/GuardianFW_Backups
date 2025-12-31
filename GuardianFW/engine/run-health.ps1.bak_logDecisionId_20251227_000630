@@ -1,0 +1,90 @@
+﻿$ErrorActionPreference = "Continue"
+
+$root   = "C:\ProgramData\GuardianFW"
+$logDir = Join-Path $root "logs"
+New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+
+$outFile = Join-Path $logDir "health-task.out"
+$tmpOut  = Join-Path $logDir "health-child.stdout.txt"
+$tmpErr  = Join-Path $logDir "health-child.stderr.txt"
+$health  = Join-Path $root "engine\health.ps1"
+$ps      = "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe"
+$latest  = Join-Path $root "evidence\health\health-latest.json"
+
+function Log([string]$s){ $s | Add-Content -Encoding UTF8 $outFile }
+
+Log ("==== {0} START ====" -f (Get-Date -Format s))
+Log ("WHOAMI: {0}" -f [System.Security.Principal.WindowsIdentity]::GetCurrent().Name)
+Log ("PSVersion: {0}" -f $PSVersionTable.PSVersion)
+Log ("RUN (child): {0}" -f $health)
+
+Remove-Item -Force $tmpOut,$tmpErr -ErrorAction SilentlyContinue
+
+$timeoutSec = 180
+$exit = 2
+
+try {
+  $p = Start-Process -FilePath $ps -ArgumentList @(
+      "-NoProfile","-ExecutionPolicy","Bypass","-File",$health
+    ) -PassThru -WindowStyle Hidden `
+    -RedirectStandardOutput $tmpOut `
+    -RedirectStandardError  $tmpErr
+
+  Log ("CHILD_PID: {0}" -f $p.Id)
+
+  $finished = $p.WaitForExit($timeoutSec * 1000)
+  try { $p.Refresh() } catch {}
+
+  if(-not $finished -or -not $p.HasExited){
+    Log ("TIMEOUT: child still running after {0}s. PID={1}" -f $timeoutSec,$p.Id)
+    Log "CHILD_EXITCODE: TIMEOUT_RUNNING"
+    $exit = 3
+  } else {
+    # Best-effort child exitcode logging
+    try { Log ("CHILD_EXITCODE: {0}" -f $p.ExitCode) } catch { Log "CHILD_EXITCODE: (unavailable)" }
+
+    # Source-of-truth exit = overall in health-latest.json
+    if(Test-Path $latest){
+      try {
+        $j = Get-Content $latest -Raw | ConvertFrom-Json
+        Log ("LATEST_TIMESTAMP: {0}" -f $j.timestamp)
+        Log ("LATEST_OVERALL:   {0}" -f $j.overall)
+        if($j.overall -eq "OK"){ $exit = 0 } else { $exit = 1 }
+      } catch {
+        Log ("LATEST_PARSE_ERROR: {0}" -f $_.Exception.Message)
+        $exit = 2
+      }
+    } else {
+      Log "LATEST_MISSING: health-latest.json not found"
+      $exit = 2
+    }
+  }
+
+  if(Test-Path $tmpOut){
+    Log "---- STDOUT ----"
+    Get-Content $tmpOut -ErrorAction SilentlyContinue | ForEach-Object { Log $_ }
+  }
+  if(Test-Path $tmpErr){
+    $errText = Get-Content $tmpErr -ErrorAction SilentlyContinue
+    if($errText){
+      Log "---- STDERR ----"
+      $errText | ForEach-Object { Log $_ }
+    }
+  }
+
+  if(Test-Path $latest){
+    Log "---- HEALTH-LATEST.JSON ----"
+    try { Log (Get-Content $latest -Raw) } catch {}
+  }
+
+  Log ("WRAPPER_RETURNING: {0}" -f $exit)
+  Log ("==== {0} END ====" -f (Get-Date -Format s))
+  exit $exit
+}
+catch {
+  Log ("WRAPPER_ERROR: {0}" -f $_.Exception.Message)
+  try { Log ("AT: {0}" -f $_.InvocationInfo.PositionMessage) } catch {}
+  Log ("WRAPPER_RETURNING: 2")
+  Log ("==== {0} END ====" -f (Get-Date -Format s))
+  exit 2
+}

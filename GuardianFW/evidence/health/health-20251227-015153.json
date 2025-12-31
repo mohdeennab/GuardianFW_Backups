@@ -1,0 +1,42 @@
+﻿{
+    "decision":  {
+                     "status":  "OLD",
+                     "timestamp":  "2025-12-27T01:03:16",
+                     "file":  "decision-20251227-010316-07cbb5.json",
+                     "note":  "newest decision older than 10 minutes"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T01:51:51",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "status":  "OK",
+                      "timestamp":  "2025-12-27T01:51:53",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+
+                                ]
+                  },
+    "timestamp":  "2025-12-27T01:51:53",
+    "overall":  "OK",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T01:51:44",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 }
+}

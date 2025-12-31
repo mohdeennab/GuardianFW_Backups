@@ -1,0 +1,24 @@
+﻿$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+$srcPolicy = "C:\ProgramData\GuardianFW\policy\dns-policy.json"
+$dstPolicy = "C:\ProgramData\GuardianFW\state\effective-dns-policy.json"
+$log = "C:\ProgramData\GuardianFW\logs\policy-apply.log"
+
+function Log($m){
+  $ts=(Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+  Add-Content -LiteralPath $log -Value ("{0} {1}" -f $ts,$m) -Encoding UTF8
+}
+
+# Validate
+& "C:\ProgramData\GuardianFW\engine\policy-validate-dns.ps1" -PolicyPath $srcPolicy | Out-Null
+Log "dns policy validated: $srcPolicy"
+
+# Snapshot into state (policy-as-data separation)
+$pol = (Get-Content -LiteralPath $srcPolicy -Raw -Encoding UTF8) | ConvertFrom-Json
+$pol.applied_utc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+
+($pol | ConvertTo-Json -Depth 8) | Set-Content -LiteralPath $dstPolicy -Encoding UTF8 -Force
+Log "effective dns policy written: $dstPolicy"
+
+exit 0

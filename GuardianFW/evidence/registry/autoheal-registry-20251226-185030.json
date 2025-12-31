@@ -1,0 +1,27 @@
+﻿{
+    "component":  "registry",
+    "verify":  {
+                   "status":  "DRIFT",
+                   "timestamp":  "2025-12-26T18:50:30",
+                   "missingKeys":  [
+                                       "HKLM:\\SOFTWARE\\Policies\\Google\\Chrome",
+                                       "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge"
+                                   ],
+                   "drift":  [
+
+                             ]
+               },
+    "timestamp":  "2025-12-26T18:50:30",
+    "post":  {
+                 "status":  "OK",
+                 "timestamp":  "2025-12-26T18:50:30",
+                 "missingKeys":  [
+
+                                 ],
+                 "drift":  [
+
+                           ]
+             },
+    "action":  "heal_attempted",
+    "heal_out":  "\r\nName                           Value                                                                                   \r\n----                           -----                                                                                   \r\nchanged                        {System.Collections.Hashtable, System.Collections.Hashtable, System.Collections.Hasht...\r\ntimestamp                      2025-12-26T18:50:30                                                                     \r\naction                         heal                                                                                    \r\n\r\n\r\n"
+}

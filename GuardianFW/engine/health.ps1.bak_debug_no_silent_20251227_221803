@@ -1,0 +1,135 @@
+﻿$ErrorActionPreference="Stop"
+
+
+# GFW_ROOT_FALLBACK: ensure $root is defined when health.ps1 runs under Task Scheduler or manually
+if(-not (Get-Variable -Name root -Scope Script -ErrorAction SilentlyContinue)){ $script:root = "C:\ProgramData\GuardianFW" }
+if([string]::IsNullOrWhiteSpace($script:root)){ $script:root = "C:\ProgramData\GuardianFW" }
+
+$ErrorActionPreference="Stop"
+$root="C:\ProgramData\GuardianFW"
+
+$logDir = Join-Path $root "logs"
+New-Item -ItemType Directory -Path $logDir -Force | Out-Null
+$trace  = Join-Path $logDir "health-trace.txt"
+$lock   = Join-Path $logDir "health.lock"
+try { Remove-Item -LiteralPath $lock -Force -EA SilentlyContinue } catch {}
+
+function Trace([string]$msg){
+  ("[{0}] {1}" -f (Get-Date -Format s), $msg) | Add-Content -Encoding UTF8 $trace
+}
+
+# ---- single instance lock (REAL) ----
+if(Test-Path $lock){
+  Trace "LOCKED: previous run still active; exiting."
+  exit 0
+}
+"locked $(Get-Date -Format s) pid=$PID" | Set-Content -Encoding UTF8 $lock
+
+try {
+  Trace "HEALTH_START"
+
+  $fw  = & "$root\engine\verify-firewall.ps1"
+  $reg = & "$root\engine\verify-registry.ps1"
+  $vi = & "$root\engine\verify-integrity.ps1"
+
+# GFW_INTEGRITY_WARNINGS_MSG: show OK(warnings=N) in DEV, DRIFT in PROD
+$integrityOk = ($vi.status -eq "OK")
+$warnCount   = @($vi.warnings).Count
+if($integrityOk){
+  if($warnCount -gt 0){ $integrityMsg = "OK(warnings=$warnCount)" } else { $integrityMsg = "OK" }
+} else {
+# [DISABLED_BY_PATCH]   $integrityMsg = "DRIFT"
+}
+
+
+  $overall = if($fw.status -eq "OK" -and $reg.status -eq "OK" -and $int.status -eq "OK"){"OK"}else{"DRIFT"}
+
+  $out = @{
+    timestamp=(Get-Date).ToString("s")
+    overall=$overall
+    firewall=$fw
+    registry=$reg
+    integrity=$int
+  }
+
+  
+
+# GFW_DEFAULT_STATUS_GUARDS
+if([string]::IsNullOrWhiteSpace($firewallStatus)){ $firewallStatus = "ERR" }
+if([string]::IsNullOrWhiteSpace($registryStatus)){ $registryStatus = "ERR" }
+if([string]::IsNullOrWhiteSpace($integrityMsg)){  $integrityMsg  = "ERR" }
+
+Write-Host ("HEALTH: {0}  (firewall={1}, registry={2}, integrity={3})" -f $overall, $firewallStatus, $registryStatus, $integrityMsg)
+$evDir = Join-Path $root "evidence\health"
+  New-Item -ItemType Directory -Path $evDir -Force | Out-Null
+
+  # ---- DECISION_SNAPSHOT_BEGIN (best-effort; recent only) ----
+  try {
+    $decDir = Join-Path $root "evidence\decisions"
+    if(Test-Path $decDir){
+      $lastDec = Get-ChildItem $decDir -Filter "decision-*.json" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending | Select-Object -First 1
+      if($lastDec){
+        $dj = Get-Content $lastDec.FullName -Raw -Encoding UTF8 -ErrorAction SilentlyContinue | ConvertFrom-Json
+        $recent = $false
+        try {
+          if($dj.timestamp){
+            $dt = [datetime]::Parse($dj.timestamp)
+            if($dt -ge (Get-Date).AddMinutes(-10)) { $recent = $true }
+          }
+        } catch { $recent = $false }
+
+        if($recent){
+          $out.decision = @{
+            status      = "RECENT"
+            file        = $lastDec.Name
+            timestamp   = $dj.timestamp
+            intent_id   = $dj.intent_id
+            decision_id = $dj.decision_id
+            out_file    = $dj.out_file
+            out_path    = $dj.out_path
+          }
+        } else {
+          $out.decision = @{
+            status    = "OLD"
+            file      = $lastDec.Name
+            timestamp = $dj.timestamp
+            note      = "newest decision older than 10 minutes"
+          }
+        }
+      } else {
+        $out.decision = @{ status="NONE"; note="no decision files found" }
+      }
+    } else {
+      $out.decision = @{ status="MISSING_DIR"; note="evidence\\decisions missing" }
+    }
+  } catch {
+    $out.decision = @{ status="ERROR"; error=$_.Exception.Message }
+  }
+  # ---- DECISION_SNAPSHOT_END ----
+
+  $fn = "health-{0}.json" -f (Get-Date -Format yyyyMMdd-HHmmss)
+  $out | ConvertTo-Json -Depth 12 | Out-File (Join-Path $evDir $fn) -Encoding UTF8
+  $out | ConvertTo-Json -Depth 12 | Out-File (Join-Path $evDir "health-latest.json") -Encoding UTF8
+
+  Trace ("HEALTH_END overall={0} wrote={1}" -f $overall,$fn)
+
+  if($overall -eq "OK"){ exit 0 } else { exit 1 }
+}
+catch {
+  Trace ("HEALTH_ERROR: {0}" -f $_.Exception.Message)
+  Trace ("AT: {0}" -f $_.InvocationInfo.PositionMessage)
+exit ($(if($overall -eq "OK"){0}else{20}))
+}
+
+finally {
+  # ---- LOCK_CLEANUP_FINALLY_BEGIN ----
+  try { Remove-Item -LiteralPath $lock -Force -EA SilentlyContinue } catch {}
+  # ---- LOCK_CLEANUP_FINALLY_END ----
+}
+
+finally {
+  Remove-Item $lock -Force -ErrorAction SilentlyContinue
+}
+
+

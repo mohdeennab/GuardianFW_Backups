@@ -1,0 +1,149 @@
+﻿==== 2025-12-28 14:07:57.41 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:08:06.32 END (task) ====
+==== 2025-12-28 14:08:37.49 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:08:46.74 END (task) ====
+==== 2025-12-28 14:10:29.47 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+==== 2025-12-28 14:10:37.54 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+==== 2025-12-28 14:11:37.48 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+==== 2025-12-28 14:11:38.55 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:11:47.83 END (task) ====
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:11:50.64 END (task) ====
+==== 2025-12-28 14:11:58.15 START (task) ====
+mohde
+PWD=C:\Windows\system32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:12:09.19 END (task) ====
+==== 2025-12-28 14:12:14.19 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:12:24.22 END (task) ====
+==== 2025-12-28 14:12:36.80 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0
+Probe health.ps1 exit=0
+Probe health.ps1 stdout: HEALTH: OK  (firewall=OK, registry=OK, integrity=OK)
+Probe write-decision-heartbeat.ps1 exit=0
+[GFW] health=OK
+[[TASKTRACE_LASTEXIT]]
+AFTER_POWERSHELL
+==== 2025-12-28 14:12:47.68 END (task) ====
+==== 2025-12-28 14:13:00.59 START (task) ====
+SYSTEM
+PWD=C:\Windows\System32
+PS=C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+PS_EXISTS=YES
+BEFORE_POWERSHELL
+Probe apply-dns-policy-phase3.ps1 exit=0
+Probe Check-DnsDrift.ps1 exit=0
+Probe verify-integrity.ps1 exit=0
+Probe verify-firewall.ps1 exit=0
+Probe verify-registry.ps1 exit=0

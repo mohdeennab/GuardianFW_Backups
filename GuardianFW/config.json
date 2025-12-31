@@ -1,0 +1,10 @@
+﻿{
+    "safe_fail":  "allow",
+    "version":  1,
+    "enforcement":  {
+                        "dns":  true,
+                        "firewall":  false,
+                        "process":  false
+                    },
+    "health_interval_sec":  60
+}

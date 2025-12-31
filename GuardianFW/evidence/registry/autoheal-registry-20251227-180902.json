@@ -1,0 +1,15 @@
+﻿{
+    "verify":  {
+                   "status":  "OK",
+                   "timestamp":  "2025-12-27T18:09:02",
+                   "missingKeys":  [
+
+                                   ],
+                   "drift":  [
+
+                             ]
+               },
+    "timestamp":  "2025-12-27T18:09:02",
+    "component":  "registry",
+    "action":  "no_drift"
+}

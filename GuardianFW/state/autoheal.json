@@ -1,0 +1,6 @@
+﻿{
+    "last_ts":  "2025-12-30T16:40:03",
+    "last":  "degraded_after_retries",
+    "failures":  284,
+    "state":  "DEGRADED"
+}

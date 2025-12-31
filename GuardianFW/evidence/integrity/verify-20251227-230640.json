@@ -1,0 +1,19 @@
+﻿{
+    "timestamp":  "2025-12-27T23:06:40",
+    "drift":  [
+                  {
+                      "expected":  "229744F091C28B60FF6B3113A384CC06E420B61E7E848B73AA082030165964FF",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\health.ps1",
+                      "actual":  "40E43B318F52B93BC0883F8FBED38092382AA0B8CA9A4F00DFE76474A40C91BC",
+                      "type":  "file_hash"
+                  }
+              ],
+    "warnings":  [
+
+                 ],
+    "missing":  [
+
+                ],
+    "mode":  "PROD",
+    "status":  "DRIFT"
+}

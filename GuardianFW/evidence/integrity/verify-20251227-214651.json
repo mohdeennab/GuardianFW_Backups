@@ -1,0 +1,25 @@
+﻿{
+    "timestamp":  "2025-12-27T21:46:51",
+    "drift":  [
+                  {
+                      "expected":  "3A92B75E40440182BF2A243ECDEAB3151727D201FAC027F40559882D3C4A33AE",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\run-health.ps1",
+                      "actual":  "1423A624D1B57E5B40D93821622D2506B7CF8A388E7173C24CAAE6EC9BFECA65",
+                      "type":  "file_hash"
+                  },
+                  {
+                      "expected":  "CD5D5D5C27E136B909891C71B8EFF59EC9614015AA1DF35D012DA9D4C751CC40",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\verify-integrity.ps1",
+                      "actual":  "A60DBB3A8464AFE85AFFA67C05FF0DDCF524965F6659481E8824365843C6A5B3",
+                      "type":  "file_hash"
+                  }
+              ],
+    "warnings":  [
+
+                 ],
+    "missing":  [
+
+                ],
+    "mode":  "PROD",
+    "status":  "DRIFT"
+}

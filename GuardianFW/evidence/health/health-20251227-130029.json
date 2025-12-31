@@ -1,0 +1,62 @@
+﻿{
+    "decision":  {
+                     "status":  "OLD",
+                     "timestamp":  "2025-12-27T01:03:16",
+                     "file":  "decision-20251227-010316-07cbb5.json",
+                     "note":  "newest decision older than 10 minutes"
+                 },
+    "registry":  {
+                     "status":  "DRIFT",
+                     "timestamp":  "2025-12-27T13:00:27",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+                                   {
+                                       "issue":  "missing",
+                                       "key":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                                       "actual":  null,
+                                       "value":  "DnsOverHttpsMode",
+                                       "expected":  "off"
+                                   },
+                                   {
+                                       "issue":  "missing",
+                                       "key":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Edge",
+                                       "actual":  null,
+                                       "value":  "QuicAllowed",
+                                       "expected":  0
+                                   },
+                                   {
+                                       "issue":  "missing",
+                                       "key":  "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\DNSClient",
+                                       "actual":  null,
+                                       "value":  "DoHPolicy",
+                                       "expected":  0
+                                   }
+                               ]
+                 },
+    "integrity":  {
+                      "status":  "OK",
+                      "timestamp":  "2025-12-27T13:00:29",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+
+                                ]
+                  },
+    "timestamp":  "2025-12-27T13:00:29",
+    "overall":  "DRIFT",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T02:18:44",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 }
+}

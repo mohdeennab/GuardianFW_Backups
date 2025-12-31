@@ -1,0 +1,20 @@
+﻿{
+    "timestamp":  "2025-12-27T23:33:17",
+    "drift":  [
+
+              ],
+    "warnings":  [
+                     {
+                         "expected":  "229744F091C28B60FF6B3113A384CC06E420B61E7E848B73AA082030165964FF",
+                         "path":  "C:\\ProgramData\\GuardianFW\\engine\\health.ps1",
+                         "actual":  "DD26B841C5322B940728D46A601E0ABB1EB36CFCD35C10AEE4A263B1485F7CE9",
+                         "note":  "DEV_MODE_IGNORED_VOLATILE",
+                         "type":  "file_hash"
+                     }
+                 ],
+    "missing":  [
+
+                ],
+    "mode":  "DEV",
+    "status":  "OK"
+}

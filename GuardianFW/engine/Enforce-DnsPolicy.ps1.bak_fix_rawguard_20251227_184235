@@ -1,0 +1,89 @@
+﻿# Enforce-DnsPolicy.ps1
+# Hosts-file based DNS enforcement (Phase 2 starter).
+$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+
+function Read-HostsWithRetry([string]$Path,[int]$tries=12,[int]$sleepMs=150){
+if($null -eq $raw){ $raw = "" }
+if($raw.Length -eq 0){ $raw = "" }
+  for($i=1; $i -le $tries; $i++){
+    try { return Get-Content -LiteralPath $Path -Raw -Encoding ASCII }
+    catch { Start-Sleep -Milliseconds $sleepMs }
+  }
+  throw "HOSTS_LOCKED_READ: $Path"
+}
+
+function Write-HostsWithRetry([string]$Path,[string]$Value,[int]$tries=12,[int]$sleepMs=150){
+  for($i=1; $i -le $tries; $i++){
+    try { Set-Content -LiteralPath $Path -Value $Value -Encoding ASCII; return }
+    catch { Start-Sleep -Milliseconds $sleepMs }
+  }
+  throw "HOSTS_LOCKED_WRITE: $Path"
+}
+function Get-GfwHostsPath { Join-Path $env:SystemRoot "System32\drivers\etc\hosts" }
+
+function Get-GfwDnsPolicyPath { "C:\ProgramData\GuardianFW\policy\dns-policy.json" }
+
+function Get-GfwUtcIso { (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ") }
+
+function Get-GfwDnsPolicy {
+  $p = Get-GfwDnsPolicyPath
+  if(-not (Test-Path $p)){ throw "DNS policy missing: $p" }
+  (Get-Content -LiteralPath $p -Raw -Encoding UTF8) | ConvertFrom-Json
+}
+
+function Remove-GuardianBlock([string]$Text){
+  # Remove existing managed block, if present.
+  return ($Text -replace '(?s)# --- GuardianFW managed entries ---.*?# --- End GuardianFW managed entries ---\s*', '')
+}
+
+function Build-GuardianBlock($policy){
+  $lines = New-Object System.Collections.Generic.List[string]
+  $lines.Add("# --- GuardianFW managed entries ---")
+  $lines.Add("# policy_version=" + [string]$policy.version)
+  foreach($d in @($policy.block)){
+    if([string]::IsNullOrWhiteSpace($d)){ continue }
+    $lines.Add("0.0.0.0 " + $d.Trim().ToLower())
+  }
+  $lines.Add("# --- End GuardianFW managed entries ---")
+  return ($lines -join "`r`n")
+}
+
+function Apply-GfwDnsPolicy {
+  # Returns hashtable: status=NOOP|CHANGED|AUDIT  count=<int> hosts=<path> policy=<path>
+  $policy = Get-GfwDnsPolicy
+  $mode   = [string]$policy.mode
+  if([string]::IsNullOrWhiteSpace($mode)){ $mode = "enforce" }
+  $mode = $mode.ToLower()
+
+  $hostsPath = Get-GfwHostsPath
+  $raw = ""
+  $raw = ""; try { $raw = Read-HostsWithRetry -Path $hostsPath } catch { $raw = "" }
+
+  $clean = Remove-GuardianBlock $raw
+  $block = Build-GuardianBlock $policy
+  $new   = ($clean.TrimEnd() + "`r`n`r`n" + $block + "`r`n")
+
+  $count = 0
+  foreach($d in @($policy.block)){
+    if(-not [string]::IsNullOrWhiteSpace($d)){ $count++ }
+  }
+
+  if($mode -eq "audit"){
+  $wouldChange = ($new.TrimEnd() -ne $raw.TrimEnd())
+  return @{ status="AUDIT"; would_change=$wouldChange; count=$count; hosts=$hostsPath; policy=(Get-GfwDnsPolicyPath); ts=(Get-GfwUtcIso) }
+}
+
+  if($new.TrimEnd() -ne $raw.TrimEnd()){
+    # NOTE: hosts file is traditionally ASCII. Keep it ASCII.
+    Write-HostsWithRetry -Path $hostsPath -Value $new
+    return @{ status="CHANGED"; count=$count; hosts=$hostsPath; policy=(Get-GfwDnsPolicyPath); ts=(Get-GfwUtcIso) }
+  }
+
+  return @{ status="NOOP"; count=$count; hosts=$hostsPath; policy=(Get-GfwDnsPolicyPath); ts=(Get-GfwUtcIso) }
+}
+
+
+
+

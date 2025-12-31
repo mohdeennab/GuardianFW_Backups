@@ -1,0 +1,25 @@
+﻿{
+    "version":  1,
+    "approved_dns":  [
+                         "192.168.4.1",
+                         "1.1.1.1",
+                         "1.0.0.1",
+                         "8.8.8.8",
+                         "8.8.4.4"
+                     ],
+    "allow_https_hosts":  [
+
+                          ],
+    "block_common_doh":  true,
+    "approved_doh_hosts":  [
+
+                           ],
+    "mode":  "NORMAL",
+    "common_doh_hosts":  [
+                             "cloudflare-dns.com",
+                             "dns.google",
+                             "mozilla.cloudflare-dns.com",
+                             "security.cloudflare-dns.com"
+                         ],
+    "block_quic":  true
+}

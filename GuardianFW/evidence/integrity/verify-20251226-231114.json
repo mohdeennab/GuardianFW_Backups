@@ -1,0 +1,15 @@
+﻿{
+    "status":  "DRIFT",
+    "timestamp":  "2025-12-26T23:11:14",
+    "missing":  [
+
+                ],
+    "drift":  [
+                  {
+                      "expected":  "2E919D3475B0A9DD033F71EC39B16B500AB0941E7CCBBC39576688642016CB06",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\write-decision.ps1",
+                      "actual":  "1C459ED3C9D547528770115945C83DAFFB297A89E940DDC6ECE81B7DF7A9A84F",
+                      "type":  "file_hash"
+                  }
+              ]
+}

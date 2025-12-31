@@ -1,0 +1,19 @@
+﻿{
+    "component":  "firewall",
+    "verify":  {
+                   "found":  6,
+                   "timestamp":  "2025-12-30T13:05:03",
+                   "modified":  [
+
+                                ],
+                   "expected":  7,
+                   "missing":  [
+                                   "GuardianFW Block QUIC Chrome UDP443 Out"
+                               ],
+                   "status":  "DRIFT"
+               },
+    "last":  "degraded_after_retries",
+    "timestamp":  "2025-12-30T13:05:09",
+    "failures":  271,
+    "state":  "DEGRADED"
+}

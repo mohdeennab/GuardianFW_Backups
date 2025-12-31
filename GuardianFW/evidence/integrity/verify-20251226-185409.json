@@ -1,0 +1,19 @@
+﻿{
+    "status":  "DRIFT",
+    "timestamp":  "2025-12-26T18:54:09",
+    "missing":  [
+
+                ],
+    "drift":  [
+                  {
+                      "issue":  "disabled",
+                      "task":  "GuardianFW-AutoHeal-Registry",
+                      "type":  "task"
+                  },
+                  {
+                      "profile":  "Public",
+                      "type":  "firewall_profile",
+                      "issue":  "disabled"
+                  }
+              ]
+}

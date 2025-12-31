@@ -1,0 +1,45 @@
+﻿{
+    "decision":  {
+                     "timestamp":  "2025-12-27T00:49:56",
+                     "out_file":  "decision-20251227-004956-056143.json",
+                     "decision_id":  "0561431c-eee6-4530-bac5-a7b7b4f8ff84",
+                     "out_path":  "C:\\ProgramData\\GuardianFW\\evidence\\decisions\\decision-20251227-004956-056143.json",
+                     "intent_id":  "INTENT_DOH_EVASION",
+                     "status":  "RECENT",
+                     "file":  "decision-20251227-004956-056143.json"
+                 },
+    "registry":  {
+                     "status":  "OK",
+                     "timestamp":  "2025-12-27T00:55:38",
+                     "missingKeys":  [
+
+                                     ],
+                     "drift":  [
+
+                               ]
+                 },
+    "integrity":  {
+                      "status":  "OK",
+                      "timestamp":  "2025-12-27T00:55:39",
+                      "missing":  [
+
+                                  ],
+                      "drift":  [
+
+                                ]
+                  },
+    "timestamp":  "2025-12-27T00:55:39",
+    "overall":  "OK",
+    "firewall":  {
+                     "found":  7,
+                     "timestamp":  "2025-12-27T00:55:32",
+                     "modified":  [
+
+                                  ],
+                     "expected":  7,
+                     "missing":  [
+
+                                 ],
+                     "status":  "OK"
+                 }
+}

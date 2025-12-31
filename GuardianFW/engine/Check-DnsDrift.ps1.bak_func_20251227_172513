@@ -1,0 +1,25 @@
+﻿$ErrorActionPreference="Stop"
+Set-StrictMode -Version Latest
+
+Import-Module "C:\ProgramData\GuardianFW\engine\Guardian.DnsDrift.psm1" -Force
+
+$stateDir = "C:\ProgramData\GuardianFW\state"
+$state = Join-Path $stateDir "dnsblock.sha256"
+
+$cur = Get-GfwManagedBlockHash
+$prev = ""
+if(Test-Path $state){ $prev = (Get-Content -LiteralPath $state -Raw -Encoding UTF8).Trim() }
+
+if([string]::IsNullOrEmpty($prev)){
+  # first time: record only
+  Set-Content -LiteralPath $state -Value $cur -Encoding UTF8
+  return @{ drift=$false; reason="FIRST_RECORD"; hash=$cur }
+}
+
+if($prev -ne $cur){
+  # drift detected
+  Set-Content -LiteralPath $state -Value $cur -Encoding UTF8
+  return @{ drift=$true; reason="HASH_CHANGED"; prev=$prev; hash=$cur }
+}
+
+return @{ drift=$false; reason="UNCHANGED"; hash=$cur }

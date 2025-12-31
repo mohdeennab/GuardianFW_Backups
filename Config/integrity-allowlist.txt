@@ -1,0 +1,5 @@
+﻿C:\ProgramData\GuardianFW\logs\*
+C:\ProgramData\GuardianFW\evidence\*
+C:\ProgramData\GuardianFW\decisions\*
+C:\ProgramData\GuardianFW\health\*
+C:\ProgramData\GuardianFW\evidence\decision\decision-latest.json

@@ -1,0 +1,27 @@
+﻿{
+    "status":  "DRIFT",
+    "timestamp":  "2025-12-26T19:50:55",
+    "missing":  [
+
+                ],
+    "drift":  [
+                  {
+                      "expected":  "C35FF6E0CC634C72D8DA60387235D0EB7458A63605D48DED9ED0C254C4443F54",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\health.ps1",
+                      "actual":  "24DCF264A3C1DD41501BFC5EE34E767A71DCC07F859FAC0D0A430B4E5FCC3E66",
+                      "type":  "file_hash"
+                  },
+                  {
+                      "expected":  "6038906866B888C7B9C5D469A28CF975B914620DFBF46F606D5DB77EB4D607EC",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\verify-firewall.ps1",
+                      "actual":  "DFD1F5CA0B622BFADFFD6CF807D31BA7078928F03CA558CA130FE2C42B2E2D3C",
+                      "type":  "file_hash"
+                  },
+                  {
+                      "expected":  "5ADFC14A6E7F8B58D6E3730F173F99F901C3A9EB3E70EB927B2E86197C377D0C",
+                      "path":  "C:\\ProgramData\\GuardianFW\\engine\\verify-registry.ps1",
+                      "actual":  "BCEC297114E0C4D72FAD4C074517C4D11861E797F0B89736EB7CF78BAE231BFD",
+                      "type":  "file_hash"
+                  }
+              ]
+}

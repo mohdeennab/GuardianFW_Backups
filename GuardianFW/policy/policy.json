@@ -1,0 +1,41 @@
+﻿{
+    "version":  1,
+    "policy_name":  "Default-Enterprise",
+    "updated_utc":  "2025-12-28T00:00:00Z",
+    "dns":  {
+                "mode":  "enforce",
+                "allowed_resolvers_ipv4":  [
+                                               "1.1.1.1",
+                                               "8.8.8.8"
+                                           ],
+                "allowed_resolvers_ipv6":  [
+
+                                           ],
+                "allow_local_router_dns":  true,
+                "block_quic_doh":  true,
+                "block_known_doh_ips":  true
+            },
+    "network":  {
+                    "allowlist_domains_file":  "approved-domains.txt",
+                    "denylist_domains_file":  "blocked-domains.txt"
+                },
+    "telemetry":  {
+                      "log_level":  "info",
+                      "log_policy_violations":  true
+                  },
+    "process_dns_policy":  {
+                               "default":  "deny",
+                               "mode":  "monitor",
+                               "action":  "log",
+                               "allow":  [
+                                             {
+                                                 "name":  "svchost-dnscache",
+                                                 "image":  "C:\\Windows\\System32\\svchost.exe",
+                                                 "service":  "Dnscache",
+                                                 "allowed_resolvers":  [
+                                                                           "192.168.4.1"
+                                                                       ]
+                                             }
+                                         ]
+                           }
+}
