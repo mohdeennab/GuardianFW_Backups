@@ -1,0 +1,7 @@
+﻿{
+  "default_profile": "Kids",
+  "devices": {
+    "192.168.1.20": { "name": "Zaina-iPad", "profile": "Kids" },
+    "192.168.1.10": { "name": "Dad-Laptop", "profile": "Adults" }
+  }
+}

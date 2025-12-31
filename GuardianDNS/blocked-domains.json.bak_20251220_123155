@@ -1,0 +1,31 @@
+{
+    "profiles":  {
+                     "Kids":  {
+                                  "block":  [
+                                                "roblox.com",
+                                                "minecraft.net",
+                                                "tiktok.com"
+                                            ],
+                                  "allow":  [
+                                                "school.edu"
+                                            ]
+                              },
+                     "Adults":  {
+                                    "block":  [
+                                                  "gambling.com"
+                                              ],
+                                    "allow":  [
+
+                                              ]
+                                }
+                 },
+    "version":  1,
+    "global":  {
+                   "block":  [
+                                 "malware.test"
+                             ],
+                   "allow":  [
+
+                             ]
+               }
+}

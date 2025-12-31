@@ -1,0 +1,20 @@
+param(
+  [string]$Control = "http://127.0.0.1:5052",
+  [string]$DeviceName = "Dad-Laptop",
+  [string]$Profile = "Kids",
+  [int]$Minutes = 30
+)
+
+$ErrorActionPreference="Stop"
+& ".\.venv\Scripts\Activate.ps1"
+
+$env:GUARDIAN_CONTROL = $Control
+$env:GUARDIAN_DEVICE_NAME = $DeviceName
+
+# Create pairing code
+$pair = irm -Method Post "$Control/admin/pairing/create?profile=$Profile&minutes=$Minutes"
+Write-Host ("Pairing code: " + $pair.pairing_code)
+
+$env:GUARDIAN_PAIRING_CODE = $pair.pairing_code
+
+python .\guardian_agent.py

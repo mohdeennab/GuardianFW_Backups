@@ -1,0 +1,249 @@
+import json, time, socket
+from pathlib import Path
+from dnslib import DNSRecord, RR, A, QTYPE, RCODE
+
+def disable_udp_connreset(sock: socket.socket):
+    # Windows UDP: prevent WinError 10054 (ICMP Port Unreachable -> ConnectionResetError)
+    try:
+        sock.ioctl(socket.SIO_UDP_CONNRESET, 0)
+    except Exception:
+        try:
+            SIO_UDP_CONNRESET = 0x9800000C
+            sock.ioctl(SIO_UDP_CONNRESET, False)
+        except Exception:
+            pass
+
+BASE = Path(r"C:\GuardianFW\GuardianDNS")
+LIST_PATH = BASE / "blocked-domains.json"
+ACTIVE_PROFILE_PATH = BASE / "active-profile.txt"
+TIMED_ALLOW_PATH    = BASE / "timed-allow.json"
+LOG_PATH  = BASE / "dns.log"
+
+LIST_CACHE = {"loaded_at": 0, "data": None}
+
+UPSTREAM_DNS = ("1.1.1.1", 53)   # router DNS
+LIST_RELOAD_SECONDS = 2
+
+def log(line: str):
+    ts = time.strftime("%Y-%m-%d %H:%M:%S")
+    BASE.mkdir(parents=True, exist_ok=True)
+    with open(LOG_PATH, "a", encoding="utf-8-sig") as f:
+        f.write(f"{ts} {line}\n")
+
+def load_list():
+    now = time.time()
+    if LIST_CACHE["data"] is not None and (now - LIST_CACHE["loaded_at"]) < LIST_RELOAD_SECONDS:
+        return LIST_CACHE["data"]
+
+    try:
+        data = json.loads(LIST_PATH.read_text(encoding="utf-8-sig"))
+    except Exception as e:
+        data = {"mode": "sinkhole", "sinkhole_ipv4": "0.0.0.0", "domains": []}
+        log(f"[WARN] Failed to read blocked list: {e}")
+
+    doms = set()
+    for d in data.get("domains", []):
+        if not isinstance(d, str):
+            continue
+        d = d.strip().lower().rstrip(".")
+        if d:
+            doms.add(d)
+
+    data["domains_set"] = doms
+    data.setdefault("mode", "sinkhole")
+    data.setdefault("sinkhole_ipv4", "0.0.0.0")
+
+    LIST_CACHE["loaded_at"] = now
+    LIST_CACHE["data"] = data
+    return data
+
+def is_blocked(qname: str, blocked_set: set) -> bool:
+    q = qname.lower().rstrip(".")
+    if q in blocked_set:
+        return True
+    parts = q.split(".")
+    for i in range(1, len(parts)):
+        if ".".join(parts[i:]) in blocked_set:
+            return True
+    return False
+
+UPSTREAM_SOCK = None
+
+def get_upstream_sock():
+    global UPSTREAM_SOCK
+    if UPSTREAM_SOCK is None:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        disable_udp_connreset(s)
+        # Windows UDP: prevent WinError 10054 (ICMP Port Unreachable -> ConnectionResetError)
+        try:
+            # Some Python builds expose this constant directly
+            s.ioctl(socket.SIO_UDP_CONNRESET, 0)
+        except Exception:
+            try:
+                # Fallback numeric constant
+                SIO_UDP_CONNRESET = 0x9800000C
+                s.ioctl(SIO_UDP_CONNRESET, False)
+            except Exception:
+                pass
+        s.settimeout(2.0)
+        # Bind once so the OS assigns a single ephemeral port we reuse
+        s.bind(("0.0.0.0", 0))
+        UPSTREAM_SOCK = s
+    return UPSTREAM_SOCK
+
+def normalize_domain(d: str) -> str:
+    d = (d or "").strip().lower()
+    if d.endswith("."): d = d[:-1]
+    return d
+
+def load_active_profile() -> str:
+    try:
+        p = ACTIVE_PROFILE_PATH.read_text(encoding="utf-8-sig").strip()
+        return p if p else "Kids"
+    except Exception:
+        return "Kids"
+
+def load_timed_allow() -> dict:
+    """
+    timed-allow.json:
+    { "version": 1, "items": [ {"domain":"roblox.com","expires_at":"2025-..Z","reason":""}, ... ] }
+    returns: dict(domain -> expires_epoch_seconds)
+    """
+    out = {}
+    try:
+        import datetime
+        obj = json.loads(TIMED_ALLOW_PATH.read_text(encoding="utf-8-sig"))
+        items = obj.get("items", []) or []
+        now = time.time()
+        for it in items:
+            dom = normalize_domain(it.get("domain",""))
+            exp = it.get("expires_at","")
+            if not dom or not exp:
+                continue
+            try:
+                # parse ISO8601 (from PowerShell .ToString("o"))
+                dt = datetime.datetime.fromisoformat(exp.replace("Z","+00:00"))
+                exp_ts = dt.timestamp()
+                if exp_ts > now:
+                    out[dom] = exp_ts
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return out
+
+def build_effective_lists(cfg: dict) -> tuple[set, set]:
+    """
+    Returns (allow_set, block_set) for current active profile + global.
+    """
+    allow = set()
+    block = set()
+
+    profile = load_active_profile()
+
+    g = (cfg or {}).get("global", {}) or {}
+    p = ((cfg or {}).get("profiles", {}) or {}).get(profile, {}) or {}
+
+    for d in (g.get("allow", []) or []): allow.add(normalize_domain(d))
+    for d in (g.get("block", []) or []): block.add(normalize_domain(d))
+    for d in (p.get("allow", []) or []): allow.add(normalize_domain(d))
+    for d in (p.get("block", []) or []): block.add(normalize_domain(d))
+
+    # allow wins over block if both present
+    block = {d for d in block if d not in allow}
+
+    return allow, block
+
+def should_block(domain: str, qtype: str, cfg: dict) -> bool:
+    d = normalize_domain(domain)
+
+    # temporary allow overrides everything (while active)
+    ta = load_timed_allow()
+    if d in ta:
+        log(f"[ALLOW-TEMP] {d} ({qtype}) -> until {int(ta[d])}")
+        return False
+
+    allow, block = build_effective_lists(cfg)
+
+    # exact match
+    if d in allow:
+        log(f"[ALLOW] {d} ({qtype}) -> allowlist")
+        return False
+    if d in block:
+        return True
+
+    # suffix match (subdomains)
+    parts = d.split(".")
+    for i in range(1, len(parts)):
+        suf = ".".join(parts[i:])
+        if suf in allow:
+            log(f"[ALLOW] {d} ({qtype}) -> allowlist ({suf})")
+            return False
+        if suf in block:
+            return True
+
+    return False
+
+def forward_to_upstream(raw: bytes) -> bytes:
+    s = get_upstream_sock()
+    s.sendto(raw, UPSTREAM_DNS)
+    try:
+        resp, _ = s.recvfrom(4096)
+    except ConnectionResetError:
+        raise
+    return resp
+
+def make_sinkhole_reply(req: DNSRecord, ipv4: str) -> bytes:
+    reply = req.reply()
+    qname = str(req.q.qname)
+    qtype = QTYPE[req.q.qtype]
+
+    if qtype == "A":
+        reply.add_answer(RR(qname, QTYPE.A, rdata=A(ipv4), ttl=30))
+    else:
+        reply.header.rcode = RCODE.NXDOMAIN
+
+    return reply.pack()
+
+def serve():
+    log("[INFO] GuardianDNS starting on 127.0.0.1:53 (UDP)")
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    disable_udp_connreset(s)
+    s.bind(("127.0.0.1", 53))
+
+    while True:
+        try:
+            raw, addr = s.recvfrom(4096)
+        except ConnectionResetError:
+            continue
+        except Exception:
+            continue
+
+        try:
+            req = DNSRecord.parse(raw)
+            cfg = load_list() or {}
+            qname = str(req.q.qname).rstrip(".")
+            qtype = QTYPE[req.q.qtype]
+
+            if should_block(qname, qtype, cfg):
+                log(f"[BLOCK] {qname} ({qtype}) -> sinkhole")
+                resp = make_sinkhole_reply(req, "0.0.0.0")
+            else:
+                resp = forward_to_upstream(raw)
+
+            s.sendto(resp, addr)
+
+        except Exception as e:
+            log(f"[ERR] {e}")
+            try:
+                resp = forward_to_upstream(raw)
+                s.sendto(resp, addr)
+            except Exception as e2:
+                log(f"[ERR] upstream fail-open failed: {e2}")
+
+
+
+if __name__ == "__main__":
+    serve()
+
+

@@ -1,0 +1,109 @@
+﻿import os, json, time, sys
+import requests
+from datetime import datetime
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+STATE_PATH = os.path.join(BASE, "state.json")
+LOG_PATH = os.path.join(BASE, "agent.log")
+
+CONTROL = os.environ.get("GUARDIAN_CONTROL", "http://127.0.0.1:5050")
+HEARTBEAT_SEC = 15
+POLICY_SEC = 30
+
+def log(msg: str):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    line = f"{ts} {msg}"
+    with open(LOG_PATH, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
+
+def load_state():
+    if not os.path.exists(STATE_PATH):
+        return {}
+    with open(STATE_PATH, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_state(st):
+    with open(STATE_PATH, "w", encoding="utf-8") as f:
+        json.dump(st, f, indent=2)
+
+def pair_if_needed():
+    st = load_state()
+    if st.get("token") and st.get("device_id"):
+        return st
+
+    pairing_code = os.environ.get("GUARDIAN_PAIRING_CODE")
+    if not pairing_code:
+        log("[ERR] Missing GUARDIAN_PAIRING_CODE env var for first pairing.")
+        return {}
+
+    payload = {
+        "pairing_code": pairing_code,
+        "device_name": os.environ.get("GUARDIAN_DEVICE_NAME", os.environ.get("COMPUTERNAME", "UnknownDevice")),
+        "os": "Windows",
+        "agent_version": "0.1.0"
+    }
+    r = requests.post(f"{CONTROL}/agent/pair", json=payload, timeout=10)
+    r.raise_for_status()
+    data = r.json()
+    st = {"device_id": data["device_id"], "profile": data["profile"], "token": data["token"], "last_policy_hash": ""}
+    save_state(st)
+    log(f"[PAIR] device_id={st['device_id']} profile={st['profile']}")
+    return st
+
+def auth_headers(token: str):
+    return {"Authorization": f"Bearer {token}"}
+
+def heartbeat(st):
+    payload = {
+        "device_id": st["device_id"],
+        "status": "online",
+        "dns_enforced": False,
+        "firewall_active": False,
+        "uptime": int(time.time())
+    }
+    r = requests.post(f"{CONTROL}/agent/heartbeat", json=payload, headers=auth_headers(st["token"]), timeout=10)
+    r.raise_for_status()
+    return r.json()
+
+def policy_pull(st):
+    r = requests.get(f"{CONTROL}/agent/policy", params={"device_id": st["device_id"]},
+                     headers=auth_headers(st["token"]), timeout=10)
+    r.raise_for_status()
+    pol = r.json()
+    blob = json.dumps(pol, sort_keys=True).encode("utf-8")
+    import hashlib
+    h = hashlib.sha256(blob).hexdigest()
+    changed = (h != st.get("last_policy_hash", ""))
+    if changed:
+        st["last_policy_hash"] = h
+        save_state(st)
+        log(f"[POLICY] updated profile={pol.get('profile')} block_domains={len(pol.get('block_domains', []))}")
+    return pol, changed
+
+def main():
+    log("[INFO] GuardianAgent starting")
+    st = pair_if_needed()
+    if not st:
+        log("[FATAL] Could not pair. Exiting.")
+        sys.exit(2)
+
+    next_hb = 0
+    next_pol = 0
+    while True:
+        now = time.time()
+        try:
+            if now >= next_hb:
+                heartbeat(st)
+                next_hb = now + HEARTBEAT_SEC
+
+            if now >= next_pol:
+                policy_pull(st)
+                next_pol = now + POLICY_SEC
+
+        except Exception as e:
+            log(f"[ERR] {type(e).__name__}: {e}")
+
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()

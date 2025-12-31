@@ -1,0 +1,38 @@
+﻿{
+    "profiles":  {
+                     "Kids":  {
+                                  "block":  [
+                                                "cloudflare-dns.com",
+                                                "dns.google",
+                                                "dns.nextdns.io",
+                                                "dns.quad9.net",
+                                                "doh.opendns.com",
+                                                "minecraft.net",
+                                                "mozilla.cloudflare-dns.com",
+                                                "roblox.com",
+                                                "tiktok.com",
+                                                "use-application-dns.net"
+                                            ],
+                                  "allow":  [
+                                                "school.edu"
+                                            ]
+                              },
+                     "Adults":  {
+                                    "block":  [
+                                                  "gambling.com"
+                                              ],
+                                    "allow":  [
+
+                                              ]
+                                }
+                 },
+    "version":  1,
+    "global":  {
+                   "block":  [
+                                 "malware.test"
+                             ],
+                   "allow":  [
+
+                             ]
+               }
+}

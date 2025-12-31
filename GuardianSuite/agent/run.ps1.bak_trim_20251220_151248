@@ -1,0 +1,22 @@
+param(
+  [string]$Control = "http://127.0.0.1:5052",
+  [string]$DeviceName = "Dad-Laptop",
+  [string]$Profile = "Kids",
+  [int]$Minutes = 30
+)
+$ErrorActionPreference="Stop"
+$here = $PSScriptRoot
+if(-not $here){ $here = (Get-Location).Path }
+Set-Location $here
+& ".\.venv\Scripts\Activate.ps1"
+
+$env:GUARDIAN_CONTROL = $Control
+$env:GUARDIAN_DEVICE_NAME = $DeviceName
+
+# Create pairing code
+$pair = irm -Method Post "$Control/admin/pairing/create?profile=$Profile&minutes=$Minutes"
+Write-Host ("Pairing code: " + $pair.pairing_code)
+Set-Content -Path (Join-Path $here "last_pairing_code.txt") -Value $pair.pairing_code -Encoding ASCII
+$env:GUARDIAN_PAIRING_CODE = $pair.pairing_code
+
+python .\guardian_agent.py

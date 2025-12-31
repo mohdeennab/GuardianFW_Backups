@@ -1,0 +1,220 @@
+﻿from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+from typing import Optional, List, Dict, Any
+import aiosqlite
+import os
+import time
+import secrets
+import jwt
+
+APP_NAME = "GuardianControl"
+DB_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "data", "guardian.db")
+JWT_SECRET = os.environ.get("GUARDIAN_JWT_SECRET", "dev-only-change-me")
+JWT_ISSUER = "guardian-control"
+JWT_AUDIENCE = "guardian-agent"
+
+app = FastAPI(title=APP_NAME)
+
+# -------------------- Models --------------------
+class PairRequest(BaseModel):
+    pairing_code: str
+    device_name: str
+    os: str
+    agent_version: str
+
+class PairResponse(BaseModel):
+    device_id: str
+    profile: str
+    token: str
+
+class Heartbeat(BaseModel):
+    device_id: str
+    status: str = "online"
+    dns_enforced: bool = False
+    firewall_active: bool = False
+    uptime: int = 0
+
+class AgentLog(BaseModel):
+    timestamp: str
+    type: str
+    data: Dict[str, Any] = Field(default_factory=dict)
+
+# -------------------- Helpers --------------------
+async def db():
+    return await aiosqlite.connect(DB_PATH)
+
+async def init_db():
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    async with await db() as conn:
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS devices (
+            device_id TEXT PRIMARY KEY,
+            name TEXT,
+            os TEXT,
+            agent_version TEXT,
+            profile TEXT,
+            last_seen INTEGER
+        );
+        """)
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS pairing_codes (
+            code TEXT PRIMARY KEY,
+            profile TEXT,
+            expires_at INTEGER
+        );
+        """)
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS logs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_id TEXT,
+            ts TEXT,
+            type TEXT,
+            json TEXT
+        );
+        """)
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS profiles (
+            name TEXT PRIMARY KEY,
+            policy_json TEXT
+        );
+        """)
+        await conn.commit()
+
+def sign_token(device_id: str) -> str:
+    now = int(time.time())
+    payload = {
+        "sub": device_id,
+        "iss": JWT_ISSUER,
+        "aud": JWT_AUDIENCE,
+        "iat": now,
+        "exp": now + 60*60*24*30  # 30 days
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+async def require_agent_token(token: str) -> str:
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"], audience=JWT_AUDIENCE, issuer=JWT_ISSUER)
+        return payload["sub"]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# -------------------- Startup --------------------
+@app.on_event("startup")
+async def _startup():
+    await init_db()
+    # Seed profiles if missing
+    kids_policy = {
+        "profile": "Kids",
+        "dns": {"block_doh": True, "forced_dns": "127.0.0.1"},
+        "block_domains": ["roblox.com", "tiktok.com", "dns.google", "cloudflare-dns.com", "mozilla.cloudflare-dns.com"],
+        "time_limits": {"weekday": "08:00-20:00", "weekend": "09:00-22:00"}
+    }
+    adults_policy = {
+        "profile": "Adults",
+        "dns": {"block_doh": False, "forced_dns": "127.0.0.1"},
+        "block_domains": [],
+        "time_limits": {}
+    }
+    import json
+    async with await db() as conn:
+        for name, pol in [("Kids", kids_policy), ("Adults", adults_policy)]:
+            cur = await conn.execute("SELECT name FROM profiles WHERE name=?", (name,))
+            row = await cur.fetchone()
+            if not row:
+                await conn.execute("INSERT INTO profiles(name, policy_json) VALUES(?,?)", (name, json.dumps(pol)))
+        await conn.commit()
+
+# -------------------- Public endpoints --------------------
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": APP_NAME, "db": DB_PATH}
+
+@app.post("/admin/pairing/create")
+async def create_pairing(profile: str = "Kids", minutes: int = 30):
+    code = f"{profile.upper()}-{secrets.randbelow(9000)+1000}"
+    expires = int(time.time()) + minutes*60
+    async with await db() as conn:
+        await conn.execute("INSERT OR REPLACE INTO pairing_codes(code, profile, expires_at) VALUES(?,?,?)",
+                           (code, profile, expires))
+        await conn.commit()
+    return {"pairing_code": code, "profile": profile, "expires_at": expires}
+
+@app.post("/agent/pair", response_model=PairResponse)
+async def pair(req: PairRequest):
+    now = int(time.time())
+    async with await db() as conn:
+        cur = await conn.execute("SELECT profile, expires_at FROM pairing_codes WHERE code=?", (req.pairing_code,))
+        row = await cur.fetchone()
+        if not row:
+            raise HTTPException(400, "Invalid pairing code")
+        profile, expires_at = row
+        if expires_at < now:
+            raise HTTPException(400, "Pairing code expired")
+
+        device_id = f"dev_{secrets.token_hex(4)}"
+        await conn.execute("""
+            INSERT INTO devices(device_id, name, os, agent_version, profile, last_seen)
+            VALUES(?,?,?,?,?,?)
+        """, (device_id, req.device_name, req.os, req.agent_version, profile, now))
+        await conn.commit()
+
+    return PairResponse(device_id=device_id, profile=profile, token=sign_token(device_id))
+
+# -------------------- Agent endpoints (token in header) --------------------
+@app.post("/agent/heartbeat")
+async def agent_heartbeat(hb: Heartbeat, authorization: Optional[str] = None):
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(401, "Missing token")
+    token = authorization.split(" ", 1)[1].strip()
+    device_id = await require_agent_token(token)
+
+    if hb.device_id != device_id:
+        raise HTTPException(403, "Token/device mismatch")
+
+    now = int(time.time())
+    async with await db() as conn:
+        await conn.execute("UPDATE devices SET last_seen=? WHERE device_id=?", (now, device_id))
+        await conn.commit()
+    return {"status": "ok", "device_id": device_id, "ts": now}
+
+@app.get("/agent/policy")
+async def agent_policy(device_id: str, authorization: Optional[str] = None):
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(401, "Missing token")
+    token = authorization.split(" ", 1)[1].strip()
+    tok_device = await require_agent_token(token)
+    if device_id != tok_device:
+        raise HTTPException(403, "Token/device mismatch")
+
+    import json
+    async with await db() as conn:
+        cur = await conn.execute("SELECT profile FROM devices WHERE device_id=?", (device_id,))
+        row = await cur.fetchone()
+        if not row:
+            raise HTTPException(404, "Unknown device")
+        profile = row[0]
+
+        cur2 = await conn.execute("SELECT policy_json FROM profiles WHERE name=?", (profile,))
+        row2 = await cur2.fetchone()
+        if not row2:
+            raise HTTPException(500, "Profile policy missing")
+        return json.loads(row2[0])
+
+@app.post("/agent/logs")
+async def agent_logs(device_id: str, logs: List[AgentLog], authorization: Optional[str] = None):
+    if not authorization or not authorization.lower().startswith("bearer "):
+        raise HTTPException(401, "Missing token")
+    token = authorization.split(" ", 1)[1].strip()
+    tok_device = await require_agent_token(token)
+    if device_id != tok_device:
+        raise HTTPException(403, "Token/device mismatch")
+
+    import json
+    async with await db() as conn:
+        for item in logs:
+            await conn.execute(
+                "INSERT INTO logs(device_id, ts, type, json) VALUES(?,?,?,?)",
+                (device_id, item.timestamp, item.type, json.dumps(item.data))
+            )
+        await conn.commit()
+    return {"status": "ok", "count": len(logs)}

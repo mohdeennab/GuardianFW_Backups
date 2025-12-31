@@ -1,0 +1,44 @@
+﻿[
+    {
+        "InterfaceAlias":  "Local Area Connection* 11",
+        "InterfaceIndex":  28,
+        "ServerAddresses":  [
+
+                            ]
+    },
+    {
+        "InterfaceAlias":  "Local Area Connection* 12",
+        "InterfaceIndex":  39,
+        "ServerAddresses":  [
+
+                            ]
+    },
+    {
+        "InterfaceAlias":  "Wi-Fi 2",
+        "InterfaceIndex":  7,
+        "ServerAddresses":  [
+                                "192.168.4.1"
+                            ]
+    },
+    {
+        "InterfaceAlias":  "Bluetooth Network Connection",
+        "InterfaceIndex":  14,
+        "ServerAddresses":  [
+
+                            ]
+    },
+    {
+        "InterfaceAlias":  "Ethernet",
+        "InterfaceIndex":  17,
+        "ServerAddresses":  [
+
+                            ]
+    },
+    {
+        "InterfaceAlias":  "Loopback Pseudo-Interface 1",
+        "InterfaceIndex":  1,
+        "ServerAddresses":  [
+
+                            ]
+    }
+]

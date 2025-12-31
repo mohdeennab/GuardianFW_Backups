@@ -1,0 +1,5 @@
+﻿GuardianFW / GuardianDNS
+- Local DNS sinkhole service for parental controls.
+- List-based blocking; returns 0.0.0.0 for blocked domains.
+- Runs as a Windows service via NSSM; no code injection, no persistence tricks beyond standard service install.
+- Logs: C:\GuardianFW\GuardianDNS\dns.log
