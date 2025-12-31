@@ -1,0 +1,6 @@
+﻿logs/
+temp/
+cache/
+backups/
+*.log
+*.tmp

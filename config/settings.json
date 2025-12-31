@@ -1,0 +1,43 @@
+﻿{
+    "FirewallName":  "GuardianFW",
+    "Logging":  {
+                    "MaxLogSizeMB":  100,
+                    "EnableLogRotation":  true,
+                    "LogLevel":  "Info",
+                    "RetentionDays":  30
+                },
+    "Description":  "AI-Powered Next-Generation Firewall",
+    "Security":  {
+                     "EnableAutoHeal":  true,
+                     "EnableQUICInspection":  true,
+                     "EnableThreatIntelligence":  false,
+                     "EnableEncryptedTrafficAnalysis":  true
+                 },
+    "Version":  "3.2",
+    "Performance":  {
+                        "HealthCheckInterval":  60,
+                        "EnableHealthMonitoring":  true,
+                        "MaxThreads":  10
+                    },
+    "Splunk":  {
+                   "SourceType":  "guardianfw:logs",
+                   "Url":  "https://your-splunk-server:8088",
+                   "TokenPath":  "C:\\GuardianFW\\secure\\splunk_token.xml",
+                   "Index":  "guardianfw",
+                   "Enabled":  false
+               },
+    "Network":  {
+                    "EnableGeoBlocking":  false,
+                    "EnablePacketInspection":  true,
+                    "BlockMaliciousIPs":  true,
+                    "MonitorInterfaces":  [
+                                              "Ethernet",
+                                              "Wi-Fi"
+                                          ]
+                },
+    "RateLimiting":  {
+                         "MaxConnectionsPerSecond":  1000,
+                         "MaxPacketsPerSecond":  10000,
+                         "EnableRateLimiting":  true
+                     }
+}
